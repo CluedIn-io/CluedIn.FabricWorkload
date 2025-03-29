@@ -1,0 +1,76 @@
+{
+    "name": "Product",
+    "displayName": "Workload_Display_Name",
+    "fullDisplayName": "Workload_Full_Display_Name",
+    "description": "Workload_Description",
+    "favicon": "assets/images/cluedin-logo.png",
+    "icon": {
+    "name": "assets/images/cluedin-logo.png"
+    },
+    "homePage": {
+      "learningMaterials": [
+        {
+          "title": "CluedIn_Clean_LearningMaterial_Title",
+          "introduction": "CluedIn_Clean_LearningMaterial_Introduction",
+          "description": "CluedIn_Clean_LearningMaterial_Description",
+          "image": "assets/images/clean.png",
+          "link": "https://documentation.cluedin.net/preparation/clean"
+        }
+      ],
+      "newSection": {
+        "customActions": [
+        ]},
+        "recommendedItemTypes": [
+          "CleanProjectItem"
+        ]
+    },
+    "createExperience": {
+      "description": "CreateHub_Workload_Description",
+      "cards": [
+        {
+          "title": "CluedIn_Clean_NewCleanItem_Title",
+          "description": "CluedIn_Clean_NewCleanItem_Description",
+          "icon": {
+            "name": "assets/images/cluedin-logo.png"
+          },
+          "icon_small": {
+            "name": "assets/images/cluedin-logo.png"
+          },
+          "onClick": {
+            "action": "open.createCleanProject"
+          },
+          "availableIn": [
+            "home",
+            "create-hub",
+            "workspace-plus-new",
+            "workspace-plus-new-teams"
+          ],
+          "itemType": "CleanProjectItem"
+        }
+      ]
+    },
+    "productDetail": {
+      "publisher": "CluedIn",
+      "slogan": "Workload_Hub_Workload_Slogan",
+      "description": "Workload_Hub_Workload_Description",
+      "image": {
+        "mediaType": 0,
+        "source": "assets/images/BannerMedium.png"
+      },
+      "slideMedia": [
+        {
+          "mediaType": 0,
+          "source": "assets/images/clean-project.png"
+        }
+      ],
+        "supportLink": {
+          "documentation": {"url": "https://documentation.cluedin.net/preparation/clean"},
+          "certification": {"url": "https://www.cluedin.com/attestation"},
+          "help": {"url": "https://www.cluedin.com/tickets-view"},
+          "privacy": {"url": "https://www.cluedin.com/privacy"},
+          "terms": {"url": "https://www.cluedin.com/terms-and-conditions"},
+          "license": {"url": "https://azuremarketplace.microsoft.com/en-us/marketplace/apps/cluedin.azure_cluedin?tab=overview"}
+      }
+    },
+    "compatibleItemTypes" : ["Lakehouse"]
+}

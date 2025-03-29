@@ -1,0 +1,51 @@
+{
+    "name": "CleanProjectItem",
+    "displayName": "CleanProjectItem_DisplayName",
+    "displayNamePlural": "CleanProjectItem_DisplayName_Plural",
+    "editor": {
+      "path": "/clean-project-editor"
+    },
+    "icon": {
+      "name": "assets/images/cluedin-logo.png"
+    },
+    "activeIcon": {
+      "name": "assets/images/cluedin-logo.png"
+    },
+    "contextMenuItems": [
+    ],
+    "quickActionItems": [
+    ],
+    "supportedInMonitoringHub": true,
+    "supportedInDatahubL1": true,
+    "itemJobActionConfig": {
+      "registeredActions": {
+        "detail": {
+          "action": "item.job.detail"
+        },
+        "cancel": {
+          "action": "item.job.cancel"
+        },
+        "retry": {
+          "action": "item.job.retry"
+        }
+      }
+    },
+    "itemSettings": {
+      "getItemSettings": {
+            "action": "getItemSettings"
+        },
+      "recentRun": {
+        "useRecentRunsComponent": true
+      }
+    },
+    "itemJobTypes": ["getData", "storeData"],
+    "editorTab": {
+      "maxInstanceCount": "10",
+      "onInit": "cleanProject.tab.onInit",
+      "onDeactivate": "cleanProject.tab.onDeactivate",
+      "canDeactivate": "cleanProject.tab.canDeactivate",
+      "canDestroy": "cleanProject.tab.canDestroy",
+      "onDestroy": "cleanProject.tab.onDestroy",
+      "onDelete": "cleanProject.tab.onDelete"
+    }
+  }

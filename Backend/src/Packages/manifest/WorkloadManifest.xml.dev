@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<WorkloadManifestConfiguration xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance" SchemaVersion="1.0.0">
+  <Workload WorkloadName="Org.CluedInClean" HostingType="Remote">
+    <Version>1.0.0</Version>
+    <RemoteServiceConfiguration>
+      <CloudServiceConfiguration>
+        <Cloud>Public</Cloud>
+        <AADApp>
+          <AppId>2a667142-8069-48ca-8e2f-c58091bdf505</AppId> <!-- Your application ID -->
+          <RedirectUri>http://localhost:60006/close</RedirectUri>
+          <ResourceId>api://localdevinstance/f5ae2861-b3fc-449d-a9e7-49c14d011ac0/Org.CluedInClean/Dev</ResourceId>
+        </AADApp>
+        <Endpoints>
+          <ServiceEndpoint>
+            <Name>Workload</Name>
+            <Url>https://fabric-api.cluedin.site/workload</Url>
+            <IsEndpointResolutionService>false</IsEndpointResolutionService>
+          </ServiceEndpoint>
+          <ServiceEndpoint>
+            <Name>Frontend</Name>
+            <Url>https://fabric-ui.cluedin.site</Url>
+            <IsEndpointResolutionService>false</IsEndpointResolutionService>
+          </ServiceEndpoint>
+        </Endpoints>
+      </CloudServiceConfiguration>
+    </RemoteServiceConfiguration>
+  </Workload>
+</WorkloadManifestConfiguration>

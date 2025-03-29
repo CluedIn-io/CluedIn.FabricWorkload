@@ -1,0 +1,5 @@
+{
+  "WorkspaceGuid": "3b070d34-eade-403e-afa2-23a48afaf889",
+  "ManifestPackageFilePath": "D:\\Code\\playground\\MicrosoftFabricWorkload\\Backend\\src\\bin\\Debug\\ManifestPackage.1.0.0.development.nupkg",
+  "WorkloadEndpointURL": "http://127.0.0.1:5000/workload"
+}

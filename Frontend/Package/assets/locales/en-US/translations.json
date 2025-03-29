@@ -1,0 +1,15 @@
+{
+    "Workload_Display_Name": "CluedIn Cleanse",
+    "Workload_Full_Display_Name": "CluedIn Cleanse",
+    "Workload_Description": "Clean data using CluedIn Clean and Microsoft Fabric",
+    "CluedIn_Clean_LearningMaterial_Title": "CluedIn Cleanse",
+    "CluedIn_Clean_LearningMaterial_Introduction": "Clean, dedupe and transform your data within minutes",
+    "CluedIn_Clean_LearningMaterial_Description": "CluedIn helps your team enhance data quality without increasing data engineering resources. By autonomously cleaning and deduplicating your files from within Microsoft Fabric, CluedIn Cleanse enables organizations to get data in shape and drive better decisions.",
+    "CreateHub_Workload_Description":"Clean Data using CluedIn Clean & Fabric",
+    "CluedIn_Clean_NewCleanItem_Title": "CluedIn Cleanse",
+    "CluedIn_Clean_NewCleanItem_Description": "Clean Data using CluedIn Clean & Fabric",
+    "Workload_Hub_Workload_Slogan": "Clean, dedupe and transform your data within minutes",
+    "Workload_Hub_Workload_Description": "CluedIn helps your team enhance data quality without increasing data engineering resources. By autonomously cleaning and deduplicating your files from within Microsoft Fabric, CluedIn Cleanse enables organizations to get data in shape and drive better decisions.",
+    "CleanProjectItem_DisplayName": "Clean Cleanse",
+    "CleanProjectItem_DisplayName_Plural": "Clean Cleanse"
+}
