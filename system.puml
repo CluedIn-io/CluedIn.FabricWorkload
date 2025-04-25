@@ -1,0 +1,27 @@
+@startuml CluedIn Fabric Workload
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+AddRelTag("relationship", $lineThickness=2)
+
+Person(user, "User")
+System_Boundary(fabric, "Microsoft Fabric") {
+    System(customWorkload, "Custom Workload", "UI in IFrame") {
+      Container(apiCalls, "API calls", "script")
+    }
+}
+
+System_Boundary(cluedInWorkload, "CluedIn Fabric Workload") {
+    System(workloadUI, "UI") {
+      Container(storageAccount, "Storage Account")
+    }
+    System(workloadAPI, "API") {
+      Container(apiContainer, "Docker Container")
+    }
+}
+
+Rel(user, customWorkload, "Uses", "HTTPS", $tags="relationship")
+Rel(customWorkload, workloadUI, "Loads From", "fabric-ui.cluedin.com", $tags="relationship")
+Rel(apiCalls, workloadAPI, "Calls To", "fabric-api.cluedin.com", $tags="relationship")
+HIDE_STEREOTYPE()
+@enduml
