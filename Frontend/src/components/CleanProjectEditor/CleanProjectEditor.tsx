@@ -155,6 +155,7 @@ const Wizard = ({
         <DialogSurface
           className={styles.dialogContainer}>
           <DialogTitle>
+            Setup
             <TabList className={styles.stepsContainer} disabled={true} selectedValue={tabNames[wizardStep - 1]}>
               <Tab value="connection" data-testid="connection-tab-btn" className={styles.steps}><CounterBadge count={1} color={getColor(1)} /> <span>CluedIn Connection</span></Tab>
               <Tab value="input-file" data-testid="input-file-tab-btn" className={styles.steps}><CounterBadge count={2} color={getColor(2)} /> <span>Input File</span></Tab>

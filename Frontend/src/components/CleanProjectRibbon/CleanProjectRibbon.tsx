@@ -7,7 +7,8 @@ import {
   //Menu, MenuItem, MenuList, MenuPopover, MenuTrigger,
   ToolbarButton, 
   //ToolbarDivider, Button, MenuButton, Label, Combobox, Option, 
-  Tooltip
+  Tooltip,
+  Text,
 } from '@fluentui/react-components';
 import {
   //Broom24Regular,
@@ -33,89 +34,18 @@ const HomeTabToolbar = (props: RibbonProps) => {
 
   return (
     <Toolbar>
-
       <Tooltip
         content="Launch Cleaning Project In CluedIn"
         relationship="label">
         <ToolbarButton
-          disabled={!props.isLaunchCleanEnabled}
           aria-label="Launch In CluedIn"
-          data-testid="item-editor-launch-in-cluedin-btn"  
-          icon={<Open24Regular />} onClick={onLaunchInCluedInClicked}>Launch In CluedIn</ToolbarButton>
+          data-testid="item-editor-launch-in-cluedin-btn"
+          appearance="subtle"
+          icon={<Open24Regular />} onClick={onLaunchInCluedInClicked}><Text>Launch In CluedIn</Text></ToolbarButton>
       </Tooltip>
-
-      {/* <Tooltip
-        content="Clean In Fabric"
-        relationship="label">
-        <ToolbarButton
-          aria-label="Clean In Fabric"
-          data-testid="item-editor-save-btn"
-          icon={<Broom24Regular />} onClick={onCleanInFabric}>Clean In Fabric</ToolbarButton>
-      </Tooltip> */}
-
-      {/* <Tooltip
-        content="Help Documentation"
-        relationship="label">
-        <ToolbarButton
-          aria-label="Help Documentation"
-          data-testid="item-editor-help-documentation-btn"
-          icon={<ChatHelp24Regular />}
-          onClick={() => onHelpDocumentationClicked()}>Help Documentation</ToolbarButton>
-      </Tooltip> */}
     </Toolbar>
   );
 };
-
-// const ViewTabToolbar = (props: RibbonProps) => {
-//   const zoomOptions = [
-//     "75%",
-//     "90%",
-//     "100%",
-//     "120%",
-//     "150%",
-//   ];
-
-//   return (
-//     <Toolbar>
-//       <ToolbarButton
-//         aria-label="Zoom to fit"
-//         icon={<ZoomFit20Filled />}>Zoom to fit</ToolbarButton>
-//       <ToolbarDivider />
-
-//       <Label className="comboboxLabel">Zoom:</Label>
-//       <Combobox readOnly={true}
-//         style={{ minWidth: "unset" }} input={{ style: { width: "50px" } }}
-//         defaultValue="100%"
-//         defaultSelectedOptions={["100%"]}>
-//         {zoomOptions.map((option) => (
-//           <Option key={option}>{option}</Option>
-//         ))}
-//       </Combobox>
-//     </Toolbar>
-//   );
-// };
-
-// const CollabButtons = (props: RibbonProps) => {
-//   return (
-//     <div className="collabContainer">
-//       <Stack horizontal>
-//         <Button size="small" icon={<Chat24Regular />}>Comments</Button>
-//         <Menu>
-//           <MenuTrigger disableButtonEnhancement>
-//             <MenuButton size="small" icon={<Edit24Regular />}>Editing</MenuButton>
-//           </MenuTrigger>
-//           <MenuPopover>
-//             <MenuList>
-//               <MenuItem>Editing</MenuItem>
-//               <MenuItem>Viewing</MenuItem>
-//             </MenuList>
-//           </MenuPopover>
-//         </Menu>
-//         <Button size="small" icon={<Share24Regular />} appearance="primary">Share</Button>
-//       </Stack>
-//     </div>
-//   );
-// }
 
 export interface RibbonProps extends PageProps {
   saveItemCallback: () => Promise<void>;
@@ -144,7 +74,7 @@ export function Ribbon(props: RibbonProps) {
   return (
     <div className="ribbon">
       {/* <CollabButtons {...props} /> */}
-      <TabList defaultSelectedValue="home" onTabSelect={onTabSelect}>
+      <TabList defaultSelectedValue="home" onTabSelect={onTabSelect} size="small">
         <Tab value="home" data-testid="home-tab-btn">Home</Tab>
         {/* <Tab value="connection" data-testid="connection-tab-btn">CluedIn Connection</Tab>
         <Tab value="input-file" data-testid="input-file-tab-btn">Input File</Tab>
