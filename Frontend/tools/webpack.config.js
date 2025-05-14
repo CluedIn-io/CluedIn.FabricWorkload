@@ -31,6 +31,10 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: "./src/index.html",
         }),
+        new HtmlWebpackPlugin({
+            template: "./src/index.html",
+            filename: "close.html"
+        }),
         // -- uncomment when static are required to be copied during build --
         new CopyWebpackPlugin({
             patterns: [
