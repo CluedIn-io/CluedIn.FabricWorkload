@@ -624,6 +624,7 @@ export function CleanProjectEditor(props: PageProps) {
               }}>
               <DialogSurface>
                 <DialogTitle>
+                  Launch In CluedIn
                 </DialogTitle>
                 <DialogBody>
                   <DialogContent >
