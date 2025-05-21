@@ -10,11 +10,28 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+variables:
+- group: FabricService
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+stages:
+  - stage: DEPLOY_STAGE_DEVELOP
+    displayName: "Deploy Fabric Frontend - Dev"
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/develop')
+    dependsOn: BUILD_STAGE
+    variables:
+      - name: environment
+        value: "develop"
+    jobs:
+      - template: ./release/deploy-infrastructure.yml
+        parameters:
+          environment: $(environment)
+          terraformStorage: $(service.Terraform.Storage)
+          terraformContainer: $(service.Terraform.Container)
+          terraformAccessKey: $(service.Terraform.AccessKey)
+          terraformDir: $(System.DefaultWorkingDirectory)/release/terraform
+          terraformOutputPath: $(Pipeline.Workspace)/terraform/$(environment)
+          terraformPlanPath: $(Pipeline.Workspace)/terraform/$(environment)/tfplan
+          subscriptionId: $(service.Azure.SubscriptionIdSaaSDevelop)
+          clientId: $(service.Azure.ClientId)
+          clientSecret: $(service.Azure.ClientSecret)
+          tenantId: $(service.Azure.TenantId)
