@@ -17,7 +17,6 @@ stages:
   - stage: DEPLOY_STAGE_DEVELOP
     displayName: "Deploy Fabric Frontend - Dev"
     condition: eq(variables['Build.SourceBranch'], 'refs/heads/develop')
-    dependsOn: BUILD_STAGE
     variables:
       - name: environment
         value: "develop"
@@ -25,13 +24,16 @@ stages:
       - template: ./release/deploy-infrastructure.yml
         parameters:
           environment: $(environment)
+          deploymentEnvironment: fabric-dev
           terraformStorage: $(service.Terraform.Storage)
           terraformContainer: $(service.Terraform.Container)
           terraformAccessKey: $(service.Terraform.AccessKey)
-          terraformDir: $(System.DefaultWorkingDirectory)/release/terraform
-          terraformOutputPath: $(Pipeline.Workspace)/terraform/$(environment)
-          terraformPlanPath: $(Pipeline.Workspace)/terraform/$(environment)/tfplan
-          subscriptionId: $(service.Azure.SubscriptionIdSaaSDevelop)
+          terraformDir: $(System.DefaultWorkingDirectory)/Frontend/release/terraform
+          terraformOutputPath: $(Pipeline.Workspace)/Frontend/terraform/$(environment)
+          terraformPlanPath: $(Pipeline.Workspace)/Frontend/terraform/$(environment)/tfplan
+          subscriptionId: $(service.Azure.SubscriptionId)
           clientId: $(service.Azure.ClientId)
           clientSecret: $(service.Azure.ClientSecret)
           tenantId: $(service.Azure.TenantId)
+          location: $(service.Develop.Location)
+          resourceGroupName: $(service.Develop.ResourceGroupName)
