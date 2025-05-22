@@ -21,7 +21,7 @@ stages:
       - name: environment
         value: "develop"
     jobs:
-      - template: ../release/deploy-infrastructure.yml
+      - template: ../Frontend/release/deploy-infrastructure.yml
         parameters:
           environment: $(environment)
           deploymentEnvironment: fabric-dev
