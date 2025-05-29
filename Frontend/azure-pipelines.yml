@@ -30,8 +30,8 @@ stages:
           terraformContainer: $(service.Terraform.Container)
           terraformAccessKey: $(service.Terraform.AccessKey)
           terraformDir: $(System.DefaultWorkingDirectory)/Frontend/terraform
-          terraformOutputPath: $(Pipeline.Workspace)/terraform/$(environment)
-          terraformPlanPath: $(Pipeline.Workspace)/terraform/$(environment)/tfplan
+          terraformOutputPath: $(Pipeline.Workspace)/Frontend/terraform/$(environment)
+          terraformPlanPath: $(Pipeline.Workspace)/Frontend/terraform/$(environment)/tfplan
           subscriptionId: $(service.Azure.SubscriptionId)
           clientId: $(service.Azure.ClientId)
           clientSecret: $(service.Azure.ClientSecret)
