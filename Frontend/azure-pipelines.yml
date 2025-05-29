@@ -14,6 +14,7 @@ variables:
 - group: FabricService
 
 stages:
+
   - stage: DEPLOY_STAGE_DEVELOP
     displayName: "Deploy Fabric Frontend - Dev"
     condition: eq(variables['Build.SourceBranch'], 'refs/heads/develop')
