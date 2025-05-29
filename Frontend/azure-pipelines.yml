@@ -29,7 +29,7 @@ stages:
           terraformStorage: $(service.Terraform.Storage)
           terraformContainer: $(service.Terraform.Container)
           terraformAccessKey: $(service.Terraform.AccessKey)
-          terraformDir: $(System.DefaultWorkingDirectory)/release/terraform
+          terraformDir: $(System.DefaultWorkingDirectory)/templates/terraform
           terraformOutputPath: $(Pipeline.Workspace)/terraform/$(environment)
           terraformPlanPath: $(Pipeline.Workspace)/terraform/$(environment)/tfplan
           subscriptionId: $(service.Azure.SubscriptionId)
