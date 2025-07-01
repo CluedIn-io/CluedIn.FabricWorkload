@@ -54,6 +54,9 @@ jobs:
           
           - script: echo ${{ parameters.location }}
             displayName: 'var location'
+     
+          - script: echo ${{ parameters.resourceGroupName }}
+            displayName: 'var resourceGroupName'
 
           # - pwsh: |
           #     terraform plan -out=${{ parameters.terraformPlanPath }}
