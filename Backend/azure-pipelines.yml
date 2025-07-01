@@ -1,8 +1,3 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - develop
 
@@ -33,49 +28,42 @@ resources:
       ref: refs/heads/refactor
 
 stages:
-  - stage: BUILD_FRONTEND
-    displayName: "Build Static Frontend"
+  - stage: Build
+    displayName: "Build & Push Docker Image"
     jobs:
-      - job: BUILD_AND_UPLOAD
-        displayName: "Build & Deploy Static UI"
-        steps:         
-          - checkout: self
-            fetchDepth: 0 
-
-          - template: common/gitversion.yml@templates
-
-          - task: NodeTool@0
+      - job: BuildAndPush
+        displayName: "Build .NET + Docker"
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - task: UseDotNet@2
             inputs:
-              versionSpec: '18.x'
-            displayName: "Install Node.js"
+              packageType: 'sdk'
+              version: '8.0.x'
+              installationPath: $(Agent.ToolsDirectory)/dotnet
 
           - script: |
-              cd Frontend
-              npm install
-            displayName: "Install dependencies"
+              dotnet build Backend/Fabric_Extension_BE_Boilerplate.sln --configuration Release
+            displayName: "Build .NET Backend"
 
-          - script: |
-              cd Frontend
-              export NODE_OPTIONS="--max_old_space_size=4096"
-              npm run build:prod
-            displayName: "Build UI"
           - task: Docker@2
             displayName: "docker - Build"
             inputs:
               containerRegistry: 'CluedIn Docker Hub'   
-              repository: 'cluedin/cluedin.fabricworkloadfrontend-ui'              
+              repository: 'cluedin/cluedin.fabricworkloadbackend-api'              
               command: 'build'
-              Dockerfile: Frontend/Dockerfile
-              buildContext: Frontend
+              Dockerfile: Backend/src/Dockerfile
+              buildContext: Backend/src
               tags: |
                 $(IMAGE_TAG)
           - template: common/docker.push.yml@templates
             parameters:
               containerRegistry: 'CluedIn Docker Hub'
-              repository: 'cluedin/cluedin.fabricworkloadfrontend-ui'
+              repository: 'cluedin/cluedin.fabricworkloadbackend-api'
               tags: '$(IMAGE_TAG)'
+
   - stage: DEPLOY_STAGE_DEVELOP
-    displayName: "Deploy Fabric Frontend - Dev"
+    displayName: "Deploy Fabric Backend - develop"
     condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'develop'))
     variables:
       - name: environment
@@ -86,18 +74,17 @@ stages:
           environment: develop
           deploymentEnvironment: fabric-dev
           terraformStorage: $(service.Terraform.StorageAccount)
-          terraformContainer: $(service.Terraform.Container)
+          terraformContainer: $(service.Terraform.BackendContainer)
           terraformAccessKey: $(service.Terraform.AccessKey)
-          terraformDir: $(System.DefaultWorkingDirectory)/Frontend/terraform
-          terraformOutputPath: $(Pipeline.Workspace)/Frontend/terraform/$(environment)
-          terraformPlanPath: $(Pipeline.Workspace)/Frontend/terraform/$(environment)/tfplan
+          terraformDir: $(System.DefaultWorkingDirectory)/Backend/terraform
+          terraformOutputPath: $(Pipeline.Workspace)/Backend/terraform/$(environment)
+          terraformPlanPath: $(Pipeline.Workspace)/Backend/terraform/$(environment)/tfplan
           subscriptionId: $(service.Azure.SubscriptionId)
           clientId: $(service.Azure.ClientId)
           clientSecret: $(service.Azure.ClientSecret)
           tenantId: $(service.Azure.TenantId)
           location: $(service.Develop.Location)
-          resourceGroupName: $(service.Develop.ResourceGroupName)
+          resourceGroupName: $(service.Develop.BackendResourceGroupName)
+          dockerImage: $(service.shared.DockerImage)
           subscriptionIdDevelop: $(service.Azure.SubscriptionIdDevelop)
-          dockerImage: $(service.shared.DockerImageFrontend)
           imageTag: $(IMAGE_TAG)
-
