@@ -4,8 +4,7 @@
 # https://aka.ms/yaml
 
 trigger:
-- master
-- develop
+- test
 
 pool:
   vmImage: ubuntu-latest
@@ -17,10 +16,10 @@ stages:
 
   - stage: DEPLOY_STAGE_DEVELOP
     displayName: "Deploy Fabric Frontend - Dev"
-    condition: eq(variables['Build.SourceBranch'], 'refs/heads/develop')
+    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'test'))
     variables:
       - name: environment
-        value: "develop"
+        value: "test"
     jobs:
       - template: ./templates/deploy-infrastructure.yml
         parameters:
