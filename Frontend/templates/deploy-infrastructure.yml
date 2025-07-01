@@ -101,7 +101,7 @@ jobs:
           - task: AzureCLI@2
             displayName: "Upload index.html to Static Website"
             inputs:
-              azureSubscription: ''
+              azureSubscription: 'dummy'
               scriptType: 'ps'
               scriptLocation: 'inlineScript'
               inlineScript: |
