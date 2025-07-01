@@ -99,18 +99,36 @@ jobs:
             condition: always()
             artifact: terraform-${{ parameters.environment }}
           - pwsh: |
+             az login --service-principal `
+               --username $env:AZURE_CLIENT_ID `
+               --password $env:AZURE_CLIENT_SECRET `
+               --tenant $env:AZURE_TENANT_ID
+
+             az role assignment create `
+               --assignee $env:ASSIGNEE_CLIENT_ID `
+               --role "Storage Blob Data Contributor" `
+                --scope "/subscriptions/$env:SUBSCRIPTION_ID/resourceGroups/$env:RESOURCE_GROUP_NAME/providers/Microsoft.Storage/storageAccounts/fabricuistoragefrontend"
+            displayName: "Assign Role: Storage Blob Data Contributor"
+            env:
+              AZURE_CLIENT_ID: ${{ parameters.clientId }}
+              AZURE_CLIENT_SECRET: ${{ parameters.clientSecret }}
+              AZURE_TENANT_ID: ${{ parameters.tenantId }}
+              ASSIGNEE_CLIENT_ID: ${{ parameters.clientId }}
+              SUBSCRIPTION_ID: ${{ parameters.subscriptionId }}
+              RESOURCE_GROUP_NAME: ${{ parameters.resourceGroupName }}
+
+          - pwsh: |
               az login --service-principal `
                 --username $env:AZURE_CLIENT_ID `
                 --password $env:AZURE_CLIENT_SECRET `
                 --tenant $env:AZURE_TENANT_ID
 
-              az storage blob upload `
+              az storage blob upload-batch `
                 --account-name fabricuistoragefrontend `
                 --container-name '$web' `
-                --name 'index.html' `
-                --file 'Frontend/src/index.html' `
-                --content-type 'text/html' `
+                --name 'Frontend/src' `
                 --overwrite
+                --auth-mode login
             displayName: "Upload index.html to Static Website"
             env:
               AZURE_CLIENT_ID: ${{ parameters.clientId }}
