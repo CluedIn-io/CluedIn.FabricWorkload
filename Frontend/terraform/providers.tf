@@ -1,4 +1,10 @@
 terraform {
+    backend "azurerm" {
+      resource_group_name  = "cluedin-terraform-rg"
+      storage_account_name = "cluedinsaasterraform"
+      container_name       = "fabric"
+      key                  = "fabric-dev.tfstate"
+  }
   required_providers {
     azurerm = {
       version = "3.17.0"
