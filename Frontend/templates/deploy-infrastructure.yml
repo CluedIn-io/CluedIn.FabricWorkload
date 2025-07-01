@@ -105,7 +105,7 @@ jobs:
               scriptType: 'ps'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                az login --service-principal -u $env:AZURE_CLIENT_ID -p $env:AZURE_CLIENT_SECRET --tenant $env:AZURE_TENANT_ID
+                az login --service-principal -u ${{ parameters.clientId }} -p ${{ parameters.clientSecret }} --tenant ${{ parameters.tenantId }}
                 az storage blob upload `
                   --account-name 'fabricuistoragefrontend' `
                   --container-name '$web' `
@@ -113,7 +113,3 @@ jobs:
                   --file 'Frontend/src/index.html' `
                   --content-type 'text/html' `
                   --overwrite
-              env:
-                AZURE_CLIENT_ID: ${{ parameters.clientId }}
-                AZURE_CLIENT_SECRET: ${{ parameters.clientSecret }}
-                AZURE_TENANT_ID: ${{ parameters.tenantId }}
