@@ -127,7 +127,7 @@ jobs:
                 --account-name fabricuistoragefrontend `
                 --container-name '$web' `
                 --name 'Frontend/src' `
-                --overwrite
+                --overwrite `
                 --auth-mode login
             displayName: "Upload index.html to Static Website"
             env:
