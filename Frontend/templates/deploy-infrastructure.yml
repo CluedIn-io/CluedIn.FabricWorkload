@@ -51,25 +51,40 @@ jobs:
                 -backend-config="key=fabric-${{ parameters.environment }}.state"
             displayName: "terraform - Init"
             workingDirectory: ${{ parameters.terraformDir }}
-          
+
+          - script: echo ${{ parameters.environment }}
+            displayName: 'var environment'
+
+          - script: echo ${{ parameters.subscriptionId }}
+            displayName: 'var subscriptionId'
+
+          - script: echo ${{ parameters.clientId }}
+            displayName: 'var clientId'
+
+          - script: echo ${{ parameters.clientSecret }}
+            displayName: 'var clientSecret'
+
+          - script: echo ${{ parameters.tenantId }}
+            displayName: 'var tenantId'
+                    
           - script: echo ${{ parameters.location }}
             displayName: 'var location'
      
           - script: echo ${{ parameters.resourceGroupName }}
             displayName: 'var resourceGroupName'
 
-          - pwsh: |
-              terraform plan -out=${{ parameters.terraformPlanPath }}
-            displayName: "terraform - Plan"
-            workingDirectory: ${{ parameters.terraformDir }}
-            env:
-              TF_VAR_environment: ${{ parameters.environment }}
-              TF_VAR_azure_subscription_id: ${{ parameters.subscriptionId }}
-              TF_VAR_azure_client_id: ${{ parameters.clientId }}
-              TF_VAR_azure_client_secret: ${{ parameters.clientSecret }}
-              TF_VAR_azure_tenant_id: ${{ parameters.tenantId }}
-              TF_VAR_location: ${{ parameters.location }}
-              TF_VAR_resource_group: ${{ parameters.resourceGroupName }}
+          # - pwsh: |
+          #     terraform plan -out=${{ parameters.terraformPlanPath }}
+          #   displayName: "terraform - Plan"
+          #   workingDirectory: ${{ parameters.terraformDir }}
+          #   env:
+          #     TF_VAR_environment: ${{ parameters.environment }}
+          #     TF_VAR_azure_subscription_id: ${{ parameters.subscriptionId }}
+          #     TF_VAR_azure_client_id: ${{ parameters.clientId }}
+          #     TF_VAR_azure_client_secret: ${{ parameters.clientSecret }}
+          #     TF_VAR_azure_tenant_id: ${{ parameters.tenantId }}
+          #     TF_VAR_location: ${{ parameters.location }}
+          #     TF_VAR_resource_group: ${{ parameters.resourceGroupName }}
           # - pwsh: |
           #     terraform apply -auto-approve ${{ parameters.terraformPlanPath }}
           #   displayName: "terraform - Apply"
