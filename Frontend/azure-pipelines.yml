@@ -37,10 +37,14 @@ stages:
               versionSpec: '18.x'
             displayName: "Install Node.js"
 
-          - script: npm install
+          - script: |
+              cd Frontend
+              npm install
             displayName: "Install dependencies"
 
-          - script: npm run build:prod
+          - script: |
+              cd Frontend
+              npm run build:prod
             displayName: "Build UI"
 
           - task: PowerShell@2
