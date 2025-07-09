@@ -37,7 +37,7 @@ stages:
               versionSpec: '18.x'
             displayName: "Install Node.js"
 
-          - script: npm ci
+          - script: npm install
             displayName: "Install dependencies"
 
           - script: npm run build:prod
