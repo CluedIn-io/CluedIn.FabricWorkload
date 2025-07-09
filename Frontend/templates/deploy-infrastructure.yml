@@ -94,24 +94,4 @@ jobs:
             displayName: "terraform - Apply"
             workingDirectory: ${{ parameters.terraformDir }}
 
-          - publish: ${{ parameters.terraformOutputPath }}
-            displayName: "publish - Artifact"
-            condition: always()
-            artifact: terraform-${{ parameters.environment }}
-          - pwsh: |
-              az login --service-principal `
-                --username $env:AZURE_CLIENT_ID `
-                --password $env:AZURE_CLIENT_SECRET `
-                --tenant $env:AZURE_TENANT_ID
 
-              az storage blob upload-batch `
-                --account-name fabricuistoragefrontend `
-                --container-name '$web' `
-                --name 'Frontend/src' `
-                --overwrite `
-                --auth-mode login
-            displayName: "Upload index.html to Static Website"
-            env:
-              AZURE_CLIENT_ID: ${{ parameters.clientId }}
-              AZURE_CLIENT_SECRET: ${{ parameters.clientSecret }}
-              AZURE_TENANT_ID: ${{ parameters.tenantId }}

@@ -12,7 +12,24 @@ pool:
 variables:
 - group: FabricService
 
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      name: CluedIn-io/AzurePipelines.Templates
+      endpoint: 'CluedIn-io'
+      ref: refs/heads/refactor
+
 stages:
+  - stage: BUILD_STAGE
+    displayName: " Build Fabric Frontend"
+    jobs:
+    - job:
+      displayName: "Build and Push Fabric Frontend"
+      steps:
+      - template: common/gitversion.yml@templates
+      - script: npm i
+        displayName: "npm - Install dependencies"
 
   - stage: DEPLOY_STAGE_DEVELOP
     displayName: "Deploy Fabric Frontend - Dev"
@@ -37,3 +54,4 @@ stages:
           tenantId: $(service.Azure.TenantId)
           location: $(service.Develop.Location)
           resourceGroupName: $(service.Develop.ResourceGroupName)
+  
