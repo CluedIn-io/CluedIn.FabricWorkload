@@ -105,9 +105,17 @@ stages:
               targetType: 'inline'
               pwsh: true
               script: |
-                $sourcePath = "$(System.DefaultWorkingDirectory)/dist"
+                Write-Host "🔎 Detecting Webpack output path..."
+                $outputPath = & node -e "console.log(require('./Frontend/tools/webpack.config.js').output.path)"
+                $outputPath = $outputPath.Trim()
+                Write-Host "✅ Detected Webpack output path: $outputPath"
+                
+                if (-Not (Test-Path $outputPath)) {
+                  Write-Error "❌ ERROR: Webpack output folder '$outputPath' not found!"
+                  exit 1
+                  }
                 az storage blob upload-batch `
                   --account-name stcluedinfabricweudev `
                   --destination '$web' `
-                  --source $sourcePath `
+                  --source $outputPath `
                   --auth-mode login
