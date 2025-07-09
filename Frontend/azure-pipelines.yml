@@ -21,15 +21,50 @@ resources:
       ref: refs/heads/refactor
 
 stages:
-  - stage: BUILD_STAGE
-    displayName: " Build Fabric Frontend"
+  - stage: BUILD_FRONTEND
+    displayName: "Build Static Frontend"
     jobs:
-    - job:
-      displayName: "Build and Push Fabric Frontend"
-      steps:
-      - template: common/gitversion.yml@templates
-      - script: npm i
-        displayName: "npm - Install dependencies"
+      - job: BUILD_AND_UPLOAD
+        displayName: "Build & Deploy Static UI"
+        steps:
+          - template: common/gitversion.yml@templates
+
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '18.x'
+            displayName: "Install Node.js"
+
+          - script: npm ci
+            displayName: "Install dependencies"
+
+          - script: npm run build:prod
+            displayName: "Build UI"
+
+          - task: PowerShell@2
+            displayName: 'Enable Static Website Hosting'
+            inputs:
+              targetType: 'inline'
+              pwsh: true
+              script: |
+                az storage blob service-properties update `
+                  --account-name stcluedinfabricweudev `
+                  --static-website `
+                  --index-document index.html `
+                  --404-document index.html `
+                  --auth-mode login
+
+          - task: PowerShell@2
+            displayName: 'Upload UI to Static Site'
+            inputs:
+              targetType: 'inline'
+              pwsh: true
+              script: |
+                $sourcePath = "$(System.DefaultWorkingDirectory)/dist"
+                az storage blob upload-batch `
+                  --account-name stcluedinfabricweudev `
+                  --destination '$web' `
+                  --source $sourcePath `
+                  --auth-mode login
 
   - stage: DEPLOY_STAGE_DEVELOP
     displayName: "Deploy Fabric Frontend - Dev"

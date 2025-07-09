@@ -8,7 +8,7 @@ resource "azurerm_resource_group" "group" {
 }
 
 resource "azurerm_storage_account" "fabric_ui" {
-  name                     = "fabricuistoragefrontend"
+  name                     = "stcluedinfabricweudev"
   resource_group_name      = var.resource_group_name
   location                 = var.location
   account_tier             = "Standard"
