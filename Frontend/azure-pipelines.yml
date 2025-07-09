@@ -106,7 +106,8 @@ stages:
               pwsh: true
               script: |
                 Write-Host "🔎 Detecting Webpack output path..."
-                $outputPath = & node -e "console.log(require('./Frontend/tools/webpack.config.js').output.path)"
+                $rawOutput = & node -e "const config = require('./Frontend/tools/webpack.config.js'); console.log(config.output.path)"
+                $outputPath = $rawOutput -split "`n" | Select-Object -Last 1
                 $outputPath = $outputPath.Trim()
                 Write-Host "✅ Detected Webpack output path: $outputPath"
                 
