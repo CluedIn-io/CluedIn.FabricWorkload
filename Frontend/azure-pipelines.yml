@@ -105,7 +105,7 @@ stages:
               targetType: 'inline'
               pwsh: true
               script: |
-                $sourcePath = "$(System.DefaultWorkingDirectory)/Frontend/dist"
+                $sourcePath = "$(System.DefaultWorkingDirectory)/dist"
                 az storage blob upload-batch `
                   --account-name stcluedinfabricweudev `
                   --destination '$web' `
