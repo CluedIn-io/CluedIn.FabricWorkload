@@ -21,6 +21,29 @@ resources:
       ref: refs/heads/refactor
 
 stages:
+  - stage: DEPLOY_STAGE_DEVELOP
+    displayName: "Deploy Fabric Frontend - Dev"
+    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'test'))
+    variables:
+      - name: environment
+        value: "test"
+    jobs:
+      - template: ./templates/deploy-infrastructure.yml
+        parameters:
+          environment: $(environment)
+          deploymentEnvironment: fabric-dev
+          terraformStorage: $(service.Terraform.StorageAccount)
+          terraformContainer: $(service.Terraform.Container)
+          terraformAccessKey: $(service.Terraform.AccessKey)
+          terraformDir: $(System.DefaultWorkingDirectory)/Frontend/terraform
+          terraformOutputPath: $(Pipeline.Workspace)/Frontend/terraform/$(environment)
+          terraformPlanPath: $(Pipeline.Workspace)/Frontend/terraform/$(environment)/tfplan
+          subscriptionId: $(service.Azure.SubscriptionId)
+          clientId: $(service.Azure.ClientId)
+          clientSecret: $(service.Azure.ClientSecret)
+          tenantId: $(service.Azure.TenantId)
+          location: $(service.Develop.Location)
+          resourceGroupName: $(service.Develop.ResourceGroupName)
   - stage: BUILD_FRONTEND
     displayName: "Build Static Frontend"
     jobs:
@@ -44,6 +67,7 @@ stages:
 
           - script: |
               cd Frontend
+              export NODE_OPTIONS="--max_old_space_size=4096"
               npm run build:prod
             displayName: "Build UI"
 
@@ -72,28 +96,3 @@ stages:
                   --destination '$web' `
                   --source $sourcePath `
                   --auth-mode login
-
-  - stage: DEPLOY_STAGE_DEVELOP
-    displayName: "Deploy Fabric Frontend - Dev"
-    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'test'))
-    variables:
-      - name: environment
-        value: "test"
-    jobs:
-      - template: ./templates/deploy-infrastructure.yml
-        parameters:
-          environment: $(environment)
-          deploymentEnvironment: fabric-dev
-          terraformStorage: $(service.Terraform.StorageAccount)
-          terraformContainer: $(service.Terraform.Container)
-          terraformAccessKey: $(service.Terraform.AccessKey)
-          terraformDir: $(System.DefaultWorkingDirectory)/Frontend/terraform
-          terraformOutputPath: $(Pipeline.Workspace)/Frontend/terraform/$(environment)
-          terraformPlanPath: $(Pipeline.Workspace)/Frontend/terraform/$(environment)/tfplan
-          subscriptionId: $(service.Azure.SubscriptionId)
-          clientId: $(service.Azure.ClientId)
-          clientSecret: $(service.Azure.ClientSecret)
-          tenantId: $(service.Azure.TenantId)
-          location: $(service.Develop.Location)
-          resourceGroupName: $(service.Develop.ResourceGroupName)
-  
