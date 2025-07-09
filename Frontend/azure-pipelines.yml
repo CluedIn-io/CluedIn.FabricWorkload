@@ -26,7 +26,10 @@ stages:
     jobs:
       - job: BUILD_AND_UPLOAD
         displayName: "Build & Deploy Static UI"
-        steps:
+        steps:         
+          - checkout: self
+            fetchDepth: 0 
+
           - template: common/gitversion.yml@templates
 
           - task: NodeTool@0
