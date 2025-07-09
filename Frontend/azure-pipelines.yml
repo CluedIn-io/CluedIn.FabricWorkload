@@ -39,7 +39,7 @@ stages:
 
           - script: |
               cd Frontend
-              npm install
+              npm install --legacy-peer-deps
             displayName: "Install dependencies"
 
           - script: |
