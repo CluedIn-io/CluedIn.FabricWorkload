@@ -72,6 +72,21 @@ stages:
             displayName: "Build UI"
 
           - task: PowerShell@2
+            displayName: 'Login to Azure with Service Principal'
+            inputs:
+              targetType: 'inline'
+              pwsh: true
+              script: |
+                az login --service-principal `
+                  --username $env:AZURE_CLIENT_ID `
+                  --password $env:AZURE_CLIENT_SECRET `
+                  --tenant $env:AZURE_TENANT_ID
+            env:
+              AZURE_CLIENT_ID: $(service.Azure.ClientId)
+              AZURE_CLIENT_SECRET: $(service.Azure.ClientSecret)
+              AZURE_TENANT_ID: $(service.Azure.TenantId)
+
+          - task: PowerShell@2
             displayName: 'Enable Static Website Hosting'
             inputs:
               targetType: 'inline'
@@ -90,7 +105,7 @@ stages:
               targetType: 'inline'
               pwsh: true
               script: |
-                $sourcePath = "$(System.DefaultWorkingDirectory)/dist"
+                $sourcePath = "$(System.DefaultWorkingDirectory)/Frontend/dist"
                 az storage blob upload-batch `
                   --account-name stcluedinfabricweudev `
                   --destination '$web' `
