@@ -145,22 +145,22 @@ stages:
               AZURE_CLIENT_SECRET: $(service.Azure.ClientSecret)
               AZURE_TENANT_ID: $(service.Azure.TenantId)
 
-      - task: PowerShell@2
-        displayName: 'Create or Update CNAME Record'
-        inputs:
-          targetType: 'inline'
-          pwsh: true
-          script: |
-            $dnsResourceGroup = "cluedin-networking"
-            $zoneName = "cluedin-test.online.com"
-            $recordSetName = "fabric-ui"
-            $cnameTarget = "stcluedinfabricweudev.z6.web.core.windows.net"
+          - task: PowerShell@2
+            displayName: 'Create or Update CNAME Record'
+            inputs:
+              targetType: 'inline'
+              pwsh: true
+              script: |
+                $dnsResourceGroup = "cluedin-networking"
+                $zoneName = "cluedin-test.online.com"
+                $recordSetName = "fabric-ui"
+                $cnameTarget = "stcluedinfabricweudev.z6.web.core.windows.net"
 
-            Write-Host "☁️ Creating/Updating CNAME: $recordSetName.$zoneName → $cnameTarget"
-            az network dns record-set cname set-record `
-              --resource-group $dnsResourceGroup `
-              --zone-name $zoneName `
-              --record-set-name $recordSetName `
-              --cname $cnameTarget
+                Write-Host "☁️ Creating/Updating CNAME: $recordSetName.$zoneName → $cnameTarget"
+                az network dns record-set cname set-record `
+                  --resource-group $dnsResourceGroup `
+                  --zone-name $zoneName `
+                  --record-set-name $recordSetName `
+                  --cname $cnameTarget
 
-            Write-Host "✅ CNAME record created/updated successfully."
+                Write-Host "✅ CNAME record created/updated successfully."
