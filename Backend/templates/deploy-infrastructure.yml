@@ -1,0 +1,106 @@
+parameters:
+  - name: environment
+    type: string
+  - name: deployEnvironment
+    type: string
+  - name: terraformStorage
+    type: string
+  - name: terraformContainer
+    type: string
+  - name: terraformAccessKey
+    type: string
+  - name: terraformDir
+    type: string
+  - name: terraformOutputPath
+    type: string
+  - name: terraformPlanPath
+    type: string
+  - name: location
+    type: string
+  - name: subscriptionId
+    type: string
+  - name: clientId
+    type: string
+  - name: clientSecret
+    type: string
+  - name: tenantId
+    type: string
+  - name: resourceGroup
+    type: string
+  - name: storageAccountName
+    type: string
+  - name: appServicePlanName
+    type: string
+  - name: functionAppName
+    type: string
+  - name: functionAppPackage
+    type: string
+  - name: containerName
+    type: string
+  - name: defaultReleaseVersion
+    type: string
+
+jobs:
+  - deployment: deploy_infrastructure
+    displayName: Deploy Infrastructure ${{ parameters.environment }}
+    environment: ${{ parameters.deployEnvironment }}
+    variables:
+      TF_IN_AUTOMATION: true
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+
+            - download: current
+              artifact: app
+              displayName: "Download app artifact"
+
+            - task: TerraformInstaller@1
+              displayName: "Terraform: Install"
+              inputs:
+                terraformVersion: 1.9.8
+
+            - pwsh: |
+                New-Item ${{ parameters.terraformOutputPath }} -ItemType Directory -Force
+
+                terraform init -reconfigure `
+                  -backend-config="storage_account_name=${{ parameters.terraformStorage }}" `
+                  -backend-config="container_name=${{ parameters.terraformContainer }}" `
+                  -backend-config="access_key=${{ parameters.terraformAccessKey }}" `
+                  -backend-config="key=functions-${{ parameters.environment }}.state"
+              displayName: "Terraform - Init"
+              workingDirectory: ${{ parameters.terraformDir }}
+
+            - pwsh: |
+                terraform plan -out=${{ parameters.terraformPlanPath }}
+              displayName: "Terraform - Plan"
+              workingDirectory: ${{ parameters.terraformDir }}
+              env:
+                TF_VAR_environment: ${{ parameters.environment }}
+                TF_VAR_location: ${{ parameters.location }}
+                TF_VAR_azure_subscription_id: ${{ parameters.subscriptionId }}
+                TF_VAR_azure_client_id: ${{ parameters.clientId }}
+                TF_VAR_azure_client_secret: ${{ parameters.clientSecret }}
+                TF_VAR_azure_tenant_id: ${{ parameters.tenantId }}
+                TF_VAR_resource_group: ${{ parameters.resourceGroup }}
+                TF_VAR_storage_account_name: ${{ parameters.storageAccountName }}
+                TF_VAR_container_name: ${{ parameters.containerName }}
+                TF_VAR_app_service_plan: ${{ parameters.appServicePlanName }}
+                TF_VAR_function_app_name: ${{ parameters.functionAppName }}
+                TF_VAR_function_app_package: ${{ parameters.functionAppPackage }}
+                TF_VAR_defaultReleaseVersion: ${{ parameters.defaultReleaseVersion }}
+
+            - pwsh: |
+                terraform apply -auto-approve ${{ parameters.terraformPlanPath }}
+              displayName: "Terraform - Apply"
+              workingDirectory: ${{ parameters.terraformDir }}
+
+            - publish: ${{ parameters.terraformOutputPath }}
+              displayName: "Publish Terraform Outputs"
+              condition: always()
+              artifact: terraform-${{ parameters.environment }}
+
+            - publish: $(Pipeline.Workspace)
+              displayName: "Publish Pipeline Workspace"
+              artifact: default

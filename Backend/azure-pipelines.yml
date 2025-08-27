@@ -1,0 +1,68 @@
+trigger:
+  - test
+  
+variables:
+  - group: backendService
+  - name: functionAppName
+    value: 'cluedin-backend-functions'
+  - name: vmImageName
+    value: 'ubuntu-latest'
+  - name: workingDirectory
+    value: '/'
+  
+stages:
+  - stage: Stage_Build
+    displayName: stage - Build functionApp
+    jobs:
+    - job: Job_Build
+      displayName: job - Build functionApp
+      pool:
+        vmImage: $(vmImageName)
+      steps:
+      - task: DotNetCoreCLI@2
+        displayName: task - Build project
+        inputs:
+          command: 'build'
+          projects: '**/*.csproj'
+          arguments: --output $(System.DefaultWorkingDirectory)/publish_output --configuration Release
+
+      - task: ArchiveFiles@2
+        displayName: task - Archive files
+        inputs:
+          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/publish_output'
+          includeRootFolder: false
+          archiveType: zip
+          archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+          replaceExistingArchive: true
+
+      - publish: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        displayName: publish - code
+        artifact: app
+
+  - stage: Stage_Deploy_Develop
+    displayName: "Deploy Landing App - test"
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/test')
+    dependsOn: Stage_Build
+    jobs:
+      - template: ./deploy-infrastructure.yml
+        parameters:
+          environment: 'test'
+          deployEnvironment: $(backend.production.DeploymentEnvironment)
+          terraformStorage: $(backend.production.Terraform.Storage)
+          terraformContainer: $(backend.production.Terraform.Container)
+          terraformAccessKey: $(backend.production.Terraform.AccessKey)
+          terraformDir: $(System.DefaultWorkingDirectory)/CluedIn.SaaS.Backend/terraform
+          terraformOutputPath: $(Pipeline.Workspace)/terraform/production
+          terraformPlanPath: $(Pipeline.Workspace)/terraform/production/tfplan
+          subscriptionId: $(backend.Azure.SubscriptionId)
+          clientId: $(backend.Azure.ClientId)
+          clientSecret: $(backend.Azure.ClientSecret)
+          tenantId: $(backend.Azure.TenantId)
+          location: $(backend.production.Location)
+          resourceGroup: $(backend.production.ResourceGroup)
+          storageAccountName: $(backend.production.StorageAccountName)
+          appServicePlanName: $(backend.production.AppServicePlanName)
+          functionAppName: $(backend.production.FunctionAppName)
+          containerName: $(backend.production.ContainerName)
+          functionAppPackage: $(Pipeline.Workspace)/app/$(Build.BuildId).zip
+          defaultReleaseVersion: $(backend.production.DefaultReleaseVersion)
