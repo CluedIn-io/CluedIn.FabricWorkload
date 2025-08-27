@@ -2,13 +2,7 @@ trigger:
   - test
   
 variables:
-  - group: backendService
-  - name: functionAppName
-    value: 'cluedin-backend-functions'
-  - name: vmImageName
-    value: 'ubuntu-latest'
-  - name: workingDirectory
-    value: '/'
+- group: FabricService
   
 stages:
   - stage: Stage_Build
@@ -44,7 +38,7 @@ stages:
     condition: eq(variables['Build.SourceBranch'], 'refs/heads/test')
     dependsOn: Stage_Build
     jobs:
-      - template: ./deploy-infrastructure.yml
+      - template: ./templates/deploy-infrastructure.yml
         parameters:
           environment: 'test'
           deployEnvironment: $(backend.production.DeploymentEnvironment)
