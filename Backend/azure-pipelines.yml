@@ -84,6 +84,6 @@ stages:
           clientSecret: $(service.Azure.ClientSecret)
           tenantId: $(service.Azure.TenantId)
           location: $(service.Develop.Location)
-          resourceGroupName: $(service.Develop.ResourceGroupName)
+          resourceGroupName: $(service.Develop.BackendResourceGroupName)
           dockerImage: $(service.shared.DockerImage)
           subscriptionIdDevelop: $(service.Azure.SubscriptionIdDevelop)
