@@ -45,13 +45,6 @@ stages:
           - script: |
               dotnet build Backend/Fabric_Extension_BE_Boilerplate.sln --configuration Release
             displayName: "Build .NET Backend"
-          - template: common/docker.nameimage.yml@templates
-            parameters:
-              isOutput: false
-          - script: |
-              echo "##vso[task.setvariable variable=dockerImageTag;isOutput=true]$(imageTag)"
-            name: SetImageTag
-            displayName: "cmd - Set image tag"
 
           - task: Docker@2
             displayName: "docker - Build"
@@ -62,12 +55,12 @@ stages:
               Dockerfile: Backend/src/Dockerfile
               buildContext: Backend/src
               tags: |
-                $(imageTag)
+                $(IMAGE_TAG)
           - template: common/docker.push.yml@templates
             parameters:
               containerRegistry: 'CluedIn Docker Hub'
               repository: 'cluedin/cluedin.backend-api'
-              tags: '$(imageTag)'
+              tags: '$(IMAGE_TAG)'
 
   - stage: DEPLOY_STAGE_DEVELOP
     displayName: "Deploy Fabric Backend - Dev"
