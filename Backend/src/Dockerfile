@@ -17,6 +17,7 @@ COPY Fabric_Extension_BE_Boilerplate.csproj ./
 RUN dotnet restore "Fabric_Extension_BE_Boilerplate.csproj"
 COPY . .
 RUN mkdir -p /Frontend/Package
+RUN mkdir -p /Frontend/Package/assets
 RUN dotnet build "Fabric_Extension_BE_Boilerplate.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
