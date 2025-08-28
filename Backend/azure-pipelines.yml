@@ -43,7 +43,7 @@ stages:
               buildContext: "src/backend-api"
               tags: |
                 $(IMAGE_TAG)
-stages:
+
   - stage: DEPLOY_STAGE_DEVELOP
     displayName: "Deploy Fabric Backend - Dev"
     condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'test'))
