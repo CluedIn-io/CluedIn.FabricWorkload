@@ -1,10 +1,16 @@
 variable "resource_group_name" {
-  default = "rg-cluedin-fabric-weu-dev"
+  default = "rg-cluedin-fabric-weu-dev-backend"
 }
 
-data "azurerm_resource_group" "group" {
-  name = var.resource_group_name
+variable "location" {
+  default = "westeurope"
 }
+
+resource "azurerm_resource_group" "group" {
+  name     = var.resource_group_name
+  location = var.location
+}
+
 
 data "azurerm_container_registry" "acr" {
   name                = "cluedindev"
@@ -14,13 +20,13 @@ data "azurerm_container_registry" "acr" {
 
 resource "azurerm_container_app_environment" "app_env" {
   name                = "backend-env"
-  location            = data.azurerm_resource_group.group.location
-  resource_group_name = data.azurerm_resource_group.group.name
+  location            = azurerm_resource_group.group.location
+  resource_group_name = azurerm_resource_group.group.name
 }
 
 resource "azurerm_container_app" "backend" {
   name                         = "backend-api"
-  resource_group_name          = data.azurerm_resource_group.group.name
+  resource_group_name          = azurerm_resource_group.group.name
   container_app_environment_id = azurerm_container_app_environment.app_env.id
   revision_mode                = "Single"
 
