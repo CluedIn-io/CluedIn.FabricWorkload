@@ -6,10 +6,10 @@ pool:
 
 variables:
 - group: FabricService
-  ACR_NAME: cluedindev
-  CONTAINER_APP_NAME: backend-api
-  IMAGE_TAG: $(Build.BuildId)
-  ENVIRONMENT: test
+- ACR_NAME: cluedindev
+- CONTAINER_APP_NAME: backend-api
+- IMAGE_TAG: $(Build.BuildId)
+- ENVIRONMENT: test
 
 stages:
   - stage: Build
