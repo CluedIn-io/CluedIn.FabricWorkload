@@ -43,7 +43,7 @@ stages:
 
           - task: AzureCLI@2
             inputs:
-              azureSubscription: '0f51ae3d-1b95-4c80-8ded-f4f55e796b80'
+              azureSubscription: '3784b9b5-eeed-45fc-99f3-a39b454ddc04'
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
