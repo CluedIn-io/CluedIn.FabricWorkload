@@ -1,8 +1,6 @@
 parameters:
   - name: environment
     type: string
-  - name: containerAppName
-    type: string
   - name: dockerImage
     type: string
   - name: terraformDir
