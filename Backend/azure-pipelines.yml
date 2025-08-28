@@ -48,8 +48,8 @@ stages:
                   --password $env:AZURE_CLIENT_SECRET `
                   --tenant $env:AZURE_TENANT_ID
                 az acr login --name $(ACR_NAME)
-                docker build -t $(ACR_NAME).azurecr.io/$(CONTAINER_APP_NAME):$(IMAGE_TAG) .
-                docker push $(ACR_NAME).azurecr.io/$(CONTAINER_APP_NAME):$(IMAGE_TAG)
+                docker build -t $(ACR_NAME).azurecr.io/$(containerAppName):$(IMAGE_TAG) .
+                docker push $(ACR_NAME).azurecr.io/$(containerAppName):$(IMAGE_TAG)
             env:
               AZURE_CLIENT_ID: $(service.Azure.ClientId)
               AZURE_CLIENT_SECRET: $(service.Azure.ClientSecret)
