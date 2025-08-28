@@ -27,6 +27,8 @@ parameters:
     type: string
   - name: terraformPlanPath
     type: string
+  - name: deploymentEnvironment
+    type: string
 
 
 jobs:
