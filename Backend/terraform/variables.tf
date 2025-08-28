@@ -20,10 +20,6 @@ variable "environment" {
   type = string
 }
 
-# Location
-variable "location" {
-  type = string
-}
 
 variable "docker_image" {
   type = string
