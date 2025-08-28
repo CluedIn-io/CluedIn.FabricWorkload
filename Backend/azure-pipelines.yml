@@ -86,3 +86,4 @@ stages:
           location: $(service.Develop.Location)
           resourceGroupName: $(service.Develop.ResourceGroupName)
           dockerImage: $(service.shared.DockerImage)
+          subscriptionIdDevelop: $(service.Azure.SubscriptionIdDevelop)

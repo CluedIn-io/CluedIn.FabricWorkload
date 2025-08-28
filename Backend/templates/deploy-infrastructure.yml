@@ -29,7 +29,8 @@ parameters:
     type: string
   - name: deploymentEnvironment
     type: string
-
+  - name: subscriptionIdDevelop
+    type: string
 
 jobs:
   - deployment: deploy_infrastructure
@@ -93,6 +94,7 @@ jobs:
                TF_VAR_location: ${{ parameters.location }}
                TF_VAR_resource_group_name: ${{ parameters.resourceGroupName }}
                TF_VAR_docker_image: ${{ parameters.dockerImage }}
+               TF_VAR_azure_subscription_id_develop: ${{ parameters.subscriptionIdDevelop }}
           - pwsh: |
              terraform apply -auto-approve ${{ parameters.terraformPlanPath }}
             displayName: "terraform - Apply"

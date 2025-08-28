@@ -1,6 +1,7 @@
 data "azurerm_container_registry" "acr" {
   name                = "cluedindev"
   resource_group_name = "oversight-rg"
+  provider = azurerm.cluedin_develop
 }
 
 resource "azurerm_container_app_environment" "app_env" {

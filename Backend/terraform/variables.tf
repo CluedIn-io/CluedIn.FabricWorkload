@@ -33,3 +33,7 @@ variable "resource_group_name" {
 variable "docker_image" {
   type = string
 }
+
+variable "azure_subscription_id_develop" {
+  type = string
+}

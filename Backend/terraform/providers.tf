@@ -20,3 +20,12 @@ provider "azurerm" {
   tenant_id       = var.azure_tenant_id
   features {}
 }
+
+provider "azurerm" {
+  subscription_id = var.azure_subscription_id_develop
+  client_id       = var.azure_client_id
+  client_secret   = var.azure_client_secret
+  tenant_id       = var.azure_tenant_id
+  features {}
+  alias = "cluedin_develop"
+}
