@@ -25,11 +25,6 @@ variable "location" {
   type = string
 }
 
-# Resource group
-variable "resource_group_name" {
-  type = string
-}
-
 variable "docker_image" {
   type = string
 }
