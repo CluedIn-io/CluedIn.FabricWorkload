@@ -35,7 +35,7 @@ stages:
               installationPath: $(Agent.ToolsDirectory)/dotnet
 
           - script: |
-              cd src/backend-api
+              cd src
               dotnet restore
               dotnet build --configuration Release
               dotnet publish -c Release -o publish
