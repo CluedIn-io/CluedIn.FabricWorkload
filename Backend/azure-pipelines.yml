@@ -47,18 +47,14 @@ stages:
                   --username $env:AZURE_CLIENT_ID `
                   --password $env:AZURE_CLIENT_SECRET `
                   --tenant $env:AZURE_TENANT_ID
+                az acr login --name $(ACR_NAME)
+                docker build -t $(ACR_NAME).azurecr.io/$(CONTAINER_APP_NAME):$(IMAGE_TAG) .
+                docker push $(ACR_NAME).azurecr.io/$(CONTAINER_APP_NAME):$(IMAGE_TAG)
             env:
               AZURE_CLIENT_ID: $(service.Azure.ClientId)
               AZURE_CLIENT_SECRET: $(service.Azure.ClientSecret)
               AZURE_TENANT_ID: $(service.Azure.TenantId)
-          - task: AzureCLI@2
-            inputs:
-              scriptType: bash
-              scriptLocation: inlineScript
-              inlineScript: |
-                az acr login --name $(ACR_NAME)
-                docker build -t $(ACR_NAME).azurecr.io/$(CONTAINER_APP_NAME):$(IMAGE_TAG) .
-                docker push $(ACR_NAME).azurecr.io/$(CONTAINER_APP_NAME):$(IMAGE_TAG)
+
   - stage: DEPLOY_STAGE_DEVELOP
     displayName: "Deploy Fabric Backend - Dev"
     condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'test'))
