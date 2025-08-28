@@ -43,7 +43,7 @@ stages:
 
           - task: AzureCLI@2
             inputs:
-              azureSubscription: '3784b9b5-eeed-45fc-99f3-a39b454ddc04'
+              azureSubscription: 'CluedIn-io'
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
