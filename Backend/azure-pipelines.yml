@@ -35,7 +35,7 @@ stages:
               installationPath: $(Agent.ToolsDirectory)/dotnet
 
           - script: |
-              dotnet build Fabric_Extension_BE_Boilerplate.sln --configuration Release
+              dotnet build Backend/Fabric_Extension_BE_Boilerplate.sln --configuration Release
             displayName: "Build .NET Backend"
           - task: PowerShell@2
             displayName: 'Login to Azure with Service Principal'
