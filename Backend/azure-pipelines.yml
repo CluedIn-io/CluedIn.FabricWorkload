@@ -10,7 +10,7 @@ variables:
 - name: ACR_NAME
   value: cluedindev
 
-- name: CONTAINER_APP_NAME
+- name: containerAppName
   value: backend-api
 
 - name: IMAGE_TAG
@@ -62,7 +62,6 @@ stages:
       - template: ./templates/deploy-infrastructure.yml
         parameters:
           environment: $(environment)
-          deploymentEnvironment: fabric-dev
           terraformStorage: $(service.Terraform.StorageAccount)
           terraformContainer: $(service.Terraform.Container)
           terraformAccessKey: $(service.Terraform.AccessKey)

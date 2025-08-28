@@ -25,8 +25,6 @@ parameters:
     type: string
   - name: terraformAccessKey
     type: string
-  - name: terraformDir
-    type: string
   - name: terraformOutputPath
     type: string
   - name: terraformPlanPath
