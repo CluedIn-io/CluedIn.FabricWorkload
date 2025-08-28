@@ -1,3 +1,11 @@
+variable "resource_group_name" {
+  default = "rg-cluedin-fabric-weu-dev"
+}
+
+data "azurerm_resource_group" "group" {
+  name = var.resource_group_name
+}
+
 data "azurerm_container_registry" "acr" {
   name                = "cluedindev"
   resource_group_name = "oversight-rg"
@@ -6,13 +14,13 @@ data "azurerm_container_registry" "acr" {
 
 resource "azurerm_container_app_environment" "app_env" {
   name                = "backend-env"
-  location            = var.location
-  resource_group_name = var.resource_group_name
+  location            = data.azurerm_resource_group.group.location
+  resource_group_name = data.azurerm_resource_group.group.name
 }
 
 resource "azurerm_container_app" "backend" {
   name                         = "backend-api"
-  resource_group_name          = var.resource_group_name
+  resource_group_name          = data.azurerm_resource_group.group.name
   container_app_environment_id = azurerm_container_app_environment.app_env.id
   revision_mode                = "Single"
 
