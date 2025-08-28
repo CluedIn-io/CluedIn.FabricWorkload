@@ -41,17 +41,15 @@ stages:
               dotnet publish -c Release -o publish
             displayName: "Build .NET Backend"
 
-          - task: Docker@2
-            displayName: "Build Docker Image"
+          - task: AzureCLI@2
             inputs:
-              containerRegistry: 'CluedIn Docker Hub'
-              repository: "$(ACR_NAME).azurecr.io/backend-api"
-              command: "buildAndPush"
-              Dockerfile: "src/backend-api/Dockerfile"
-              buildContext: "src/backend-api"
-              tags: |
-                $(IMAGE_TAG)
-
+              azureSubscription: '0f51ae3d-1b95-4c80-8ded-f4f55e796b80'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az acr login --name $(ACR_NAME)
+                docker build -t $(ACR_NAME).azurecr.io/$(CONTAINER_APP_NAME):$(IMAGE_TAG) .
+                docker push $(ACR_NAME).azurecr.io/$(CONTAINER_APP_NAME):$(IMAGE_TAG)
   - stage: DEPLOY_STAGE_DEVELOP
     displayName: "Deploy Fabric Backend - Dev"
     condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'test'))
