@@ -1,7 +1,3 @@
-provider "azurerm" {
-  features {}
-}
-
 resource "azurerm_container_app_environment" "app_env" {
   name                = "backend-env"
   location            = var.location
