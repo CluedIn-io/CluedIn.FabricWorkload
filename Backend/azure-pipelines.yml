@@ -11,7 +11,7 @@ variables:
   value: cluedindev
 
 - name: containerAppName
-  value: Fabricworkloadbackend-api
+  value: fabricworkloadbackend-api
 
 - name: IMAGE_TAG
   value: $(Build.BuildId)
@@ -50,7 +50,7 @@ stages:
             displayName: "docker - Build"
             inputs:
               containerRegistry: 'CluedIn Docker Hub'   
-              repository: 'cluedin/cluedin.Fabricworkloadbackend-api'                
+              repository: 'cluedin/cluedin.fabricworkloadbackend-api'              
               command: 'build'
               Dockerfile: Backend/src/Dockerfile
               buildContext: Backend/src
@@ -59,7 +59,7 @@ stages:
           - template: common/docker.push.yml@templates
             parameters:
               containerRegistry: 'CluedIn Docker Hub'
-              repository: 'cluedin/cluedin.Fabricworkloadbackend-api'
+              repository: 'cluedin/cluedin.fabricworkloadbackend-api'
               tags: '$(IMAGE_TAG)'
 
   - stage: DEPLOY_STAGE_DEVELOP
