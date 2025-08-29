@@ -3,7 +3,8 @@ import {
 
    // Body1Stronger,
     Spinner,
-    TableCellLayout
+    TableCellLayout,
+    //useTableColumnSizing_unstable
 } from "@fluentui/react-components";
 
 import {
@@ -29,10 +30,19 @@ import { makeStyles } from "@fluentui/react-components";
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 
 export const useStyles = makeStyles({
+    tableCellHeader: {
+        borderLeft: '1px solid silver',
+        borderRadius: 'unset',
+        textOverflow: 'ellipsis',
+        // padding: '0px 1px',
+        // width: '152px',
+        // margin: ''
+    },
     tableCell: {
         borderLeft: '1px solid silver',
         borderRadius: 'unset',
         textOverflow: 'ellipsis',
+        // width: '150px',
     },
     tableRow: {
         // borderLeft: '1px solid silver',
@@ -41,7 +51,8 @@ export const useStyles = makeStyles({
         // borderRadius: 'unset'
     },
     table: {
-        border: '1px solid silver',
+        borderTop: '1px solid silver',
+        borderRight: '1px solid silver',
         borderRadius: 'unset',
     }
 });
@@ -108,8 +119,13 @@ export function FilePreview({
     const styles = useStyles();
   const { targetDocument } = useFluent();
   const scrollbarWidth = useScrollbarWidth({ targetDocument });
+  const rowHeight = 25;
+  const maxRows = 20;
 
   const data = (filePreviewRows || []);
+  const numRows = data.length > maxRows ? maxRows : data.length;
+  const tableDataHeight = numRows * rowHeight;
+  const hasScrollbar = data.length > maxRows;
 
   const columnNames = (data && data.length > 0)
   ? Object.keys(data[0])
@@ -129,7 +145,9 @@ export function FilePreview({
         style={style}
         key={`previewrow_${index}`}
       >
-        <TableCell className={styles.tableCell}>{index+1}</TableCell>
+        <TableCell className={styles.tableCell}>
+            <TableCellLayout truncate={true}>{index+1}</TableCellLayout>
+        </TableCell>
         {columnNames.map((column) => 
             <TableCell className={styles.tableCell}>
                 <TableCellLayout truncate={true}>{item[column]}</TableCellLayout>
@@ -138,9 +156,19 @@ export function FilePreview({
       </TableRow>
     );
   };
-  const { getRows } = useTableFeatures({ items: data, columns });
+  const { getRows } = useTableFeatures(
+    { 
+        items: data, 
+        columns, 
+    }, 
+    // [
+    //     useTableColumnSizing_unstable({
+    //       autoFitColumns: false,
+    //     }),
+    // ],
+  );
 
-  const rows = getRows((row) => {
+    const rows = getRows((row) => {
     return row;
   });
 
@@ -189,24 +217,25 @@ export function FilePreview({
                             noNativeElements
                             arial-label="Default table" 
                             size="extra-small" 
-                            className={styles.table} >
+                            className={styles.table}>
                             <TableHeader >
                                 <TableRow className={styles.tableRow} appearance={"neutral"}>
-                                    <TableHeaderCell key={"rowIndex"} className={styles.tableCell}>
+                                    <TableHeaderCell key={"rowIndex"} className={styles.tableCellHeader}>
+                                        <TableCellLayout truncate={true}></TableCellLayout>
                                     </TableHeaderCell>
                                     {columnNames.map((column) => (
-                                        <TableHeaderCell key={column} className={styles.tableCell}>
+                                        <TableHeaderCell key={column} className={styles.tableCellHeader}>
                                             <TableCellLayout truncate={true}>{column}</TableCellLayout>
                                         </TableHeaderCell>
                                     ))}
-                                    <div role="presentation" style={{ width: scrollbarWidth }} />
+                                    {hasScrollbar && (<div role="presentation" style={{ width: scrollbarWidth }} />)}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 <FixedSizeList
-                                    height={400}
+                                    height={tableDataHeight}
                                     itemCount={data.length}
-                                    itemSize={25}
+                                    itemSize={rowHeight}
                                     width="100%"
                                     itemData={rows}
                                 >

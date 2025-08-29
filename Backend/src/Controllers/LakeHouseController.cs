@@ -30,6 +30,8 @@ using Fabric_Extension_BE_Boilerplate;
 using System.Net.Http;
 using System.Threading;
 using Newtonsoft.Json;
+using Fabric_Extension_BE_Boilerplate.Services;
+using static Boilerplate.Controllers.LakehouseController;
 
 namespace Boilerplate.Controllers
 {
@@ -45,6 +47,7 @@ namespace Boilerplate.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IAuthenticationService _authenticationService;
         private readonly ILakehouseClientService _lakeHouseClientService;
+        private readonly ICluedInOrganizationService cluedInOrganizationService;
 
         public IHttpClientFactory HttpClientFactory { get; }
 
@@ -53,13 +56,15 @@ namespace Boilerplate.Controllers
             IHttpContextAccessor httpContextAccessor,
             IAuthenticationService authenticationService,
             ILakehouseClientService lakeHouseClientService,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            ICluedInOrganizationService cluedInOrganizationService)
         {
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
             _authenticationService = authenticationService;
             _lakeHouseClientService = lakeHouseClientService;
             HttpClientFactory = httpClientFactory;
+            this.cluedInOrganizationService = cluedInOrganizationService;
         }
 
         [HttpGet("getLakehouseFile")]
@@ -222,6 +227,61 @@ namespace Boilerplate.Controllers
             {
                 return Ok(new TestConnectionResult(false, ex.Message));
             }
+        }
+
+        [HttpPost("organizations")]
+        public async Task<IActionResult> CreateOrganizationsAsync([FromBody] CreateOrganizationRequest createOrganizationRequest)
+        {
+            var cluedInDomain = Environment.GetEnvironmentVariable("CluedInDomain");
+            var newAccountAccessKey = Environment.GetEnvironmentVariable("CluedInNewAccountAccessKey");
+            var request = new HttpRequestMessage(HttpMethod.Post, $"https://app.{cluedInDomain}/auth/api/account/new");
+            request.Headers.Add("x-cluedin-newaccountaccesskey", newAccountAccessKey);
+            var collection = new List<KeyValuePair<string, string>>
+            {
+                new("grant_type", "password"),
+                new("allowEmailDomainSignup", "False"),
+                new("email", createOrganizationRequest.UserEmail),
+                new("username", createOrganizationRequest.UserEmail),
+                new("password", createOrganizationRequest.UserPassword),
+                new("confirmpassword", createOrganizationRequest.UserPassword),
+                new("emailDomain", createOrganizationRequest.UserEmail),
+                new("applicationSubDomain", createOrganizationRequest.OrganizationName),
+                new("organizationName", createOrganizationRequest.OrganizationName)
+            };
+            var content = new FormUrlEncodedContent(collection);
+            request.Content = content;
+
+            var client = HttpClientFactory.CreateClient(IngestionConstants.AllowUntrustedSSLClient);
+
+            var response = await client.SendAsync(request, CancellationToken.None).ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new StatusCodeResult((int)response.StatusCode);
+            }
+            //var result = await response.Content
+            //    .DeserializeToAnonymousTypeAsync(new { access_token = "" })
+            //    .ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid result because it is empty.");
+
+            //if (string.IsNullOrWhiteSpace(result?.access_token))
+            //{
+            //    return Ok(new TestConnectionResult(false, "Invalid user email or password"));
+            //}
+            return new ObjectResult(new CluedInConnection(
+                cluedInDomain,
+                createOrganizationRequest.OrganizationName,
+                createOrganizationRequest.UserEmail,
+                createOrganizationRequest.UserPassword));
+        }
+
+        public class CreateOrganizationRequest(
+            string OrganizationName,
+            string UserEmail,
+            string UserPassword)
+        {
+            public string OrganizationName { get; } = OrganizationName;
+            public string UserEmail { get; } = UserEmail;
+            public string UserPassword { get; } = UserPassword;
         }
 
         public class CluedInConnection(

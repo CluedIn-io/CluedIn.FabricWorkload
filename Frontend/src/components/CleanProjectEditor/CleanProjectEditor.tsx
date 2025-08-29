@@ -167,6 +167,7 @@ const Wizard = ({
               {wizardStep === 1 &&
                 <CluedInConnectionInput
                   {...props}
+                  canCreateNewAccount={true}
                   cluedInConnection={cluedInConnection}
                   onCancel={() => {
                     onCancel();
