@@ -31,6 +31,8 @@ parameters:
     type: string
   - name: subscriptionIdDevelop
     type: string
+  - name: imageTag
+    type: string
 
 jobs:
   - deployment: deploy_infrastructure
@@ -95,6 +97,7 @@ jobs:
                TF_VAR_resource_group_name: ${{ parameters.resourceGroupName }}
                TF_VAR_docker_image: ${{ parameters.dockerImage }}
                TF_VAR_azure_subscription_id_develop: ${{ parameters.subscriptionIdDevelop }}
+               TF_VAR_image_tag: ${{ parameters.imageTag }}
           - pwsh: |
              terraform apply -auto-approve ${{ parameters.terraformPlanPath }}
             displayName: "terraform - Apply"

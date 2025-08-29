@@ -87,3 +87,4 @@ stages:
           resourceGroupName: $(service.Develop.BackendResourceGroupName)
           dockerImage: $(service.shared.DockerImage)
           subscriptionIdDevelop: $(service.Azure.SubscriptionIdDevelop)
+          imageTag: $(IMAGE_TAG)
