@@ -13,6 +13,9 @@ resource "azurerm_storage_account" "fabric_ui" {
   location                 = var.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
+  depends_on = [
+    azurerm_resource_group.group
+  ]
   static_website {
     index_document = "index.html"
     error_404_document = "index.html"
