@@ -37,7 +37,7 @@ resource "azurerm_container_app" "backend" {
   template {
     container {
       name   = "backend-api"
-      image  = var.docker_image
+      image  = "${var.docker_image}:latest"
       cpu    = 0.5
       memory = "1.0Gi"
     }
