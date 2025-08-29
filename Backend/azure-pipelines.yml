@@ -72,7 +72,7 @@ stages:
       - template: ./templates/deploy-infrastructure.yml
         parameters:
           environment: test
-          deploymentEnvironment: fabric-test
+          deploymentEnvironment: fabric-dev
           terraformStorage: $(service.Terraform.StorageAccount)
           terraformContainer: $(service.Terraform.BackendContainer)
           terraformAccessKey: $(service.Terraform.AccessKey)
