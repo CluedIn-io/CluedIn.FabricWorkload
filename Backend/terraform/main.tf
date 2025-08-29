@@ -94,12 +94,12 @@ resource "azurerm_container_app" "backend" {
         value = azurerm_storage_account.backend_storage.primary_connection_string
       }
       env {
-        name  = "AZURE_CLIENT_ID"
+        name  = "clientId"
         value = var.azure_client_id
       }
 
       env {
-        name  = "AZURE_CLIENT_SECRET"
+        name  = "clientSecret"
         value = var.azure_client_secret
     }
     }
