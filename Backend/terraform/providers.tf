@@ -2,7 +2,7 @@ terraform {
     backend "azurerm" {
       resource_group_name  = "cluedin-terraform-rg"
       storage_account_name = "cluedinsaasterraform"
-      container_name       = "fabric"
+      container_name       = "fabricbackend"
       key                  = "fabric-dev.tfstate"
   }
   required_providers {

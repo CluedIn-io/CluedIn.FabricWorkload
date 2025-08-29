@@ -63,7 +63,7 @@ stages:
               tags: '$(IMAGE_TAG)'
 
   - stage: DEPLOY_STAGE_DEVELOP
-    displayName: "Deploy Fabric Backend - Dev"
+    displayName: "Deploy Fabric Backend - test"
     condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'test'))
     variables:
       - name: environment
@@ -71,10 +71,10 @@ stages:
     jobs:
       - template: ./templates/deploy-infrastructure.yml
         parameters:
-          environment: $(environment)
-          deploymentEnvironment: fabric-dev
+          environment: test
+          deploymentEnvironment: fabric-test
           terraformStorage: $(service.Terraform.StorageAccount)
-          terraformContainer: $(service.Terraform.Container)
+          terraformContainer: $(service.Terraform.BackendContainer)
           terraformAccessKey: $(service.Terraform.AccessKey)
           terraformDir: $(System.DefaultWorkingDirectory)/Backend/terraform
           terraformOutputPath: $(Pipeline.Workspace)/Backend/terraform/$(environment)
