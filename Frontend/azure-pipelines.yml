@@ -30,7 +30,7 @@ stages:
     jobs:
       - template: ./templates/deploy-infrastructure.yml
         parameters:
-          environment: $(environment)
+          environment: test
           deploymentEnvironment: fabric-dev
           terraformStorage: $(service.Terraform.StorageAccount)
           terraformContainer: $(service.Terraform.Container)
