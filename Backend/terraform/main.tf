@@ -5,15 +5,6 @@ variable "resource_group_name" {
 variable "location" {
   default = "westeurope"
 }
-variable "azure_client_id" {
-  type      = string
-  sensitive = true
-}
-
-variable "azure_client_secret" {
-  type      = string
-  sensitive = true
-}
 
 resource "azurerm_resource_group" "group" {
   name     = var.resource_group_name

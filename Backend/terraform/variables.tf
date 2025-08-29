@@ -10,7 +10,13 @@ variable "azure_tenant_id" {
 variable "environment" {
   type = string
 }
+variable "azure_client_id" {
+  type      = string
+}
 
+variable "azure_client_secret" {
+  type      = string
+}
 
 variable "docker_image" {
   type = string
