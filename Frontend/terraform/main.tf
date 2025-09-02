@@ -25,13 +25,22 @@ resource "azurerm_storage_account" "fabric_ui" {
   }
 }
 
+data "azurerm_dns_zone" "main" {
+  name                = "cluedin-test.online"
+  resource_group_name = "cluedin-networking"
+  provider = azurerm.cluedin_develop
+}
+
+
 resource "azurerm_dns_cname_record" "fabric_ui_cname" {
-  name                = local.record_set_name
-  zone_name           = local.dns_zone_name
-  resource_group_name = local.dns_resource_group
+  provider            = azurerm.cluedin_develop
+  name                = "fabric-ui"
+  zone_name           = data.azurerm_dns_zone.main.name
+  resource_group_name = data.azurerm_dns_zone.main.resource_group_name
   ttl                 = 300
   record              = azurerm_storage_account.fabric_ui.primary_web_host
 }
+
 
 # Output Static Website URL
 output "web_endpoint" {

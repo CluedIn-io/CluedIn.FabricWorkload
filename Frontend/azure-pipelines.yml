@@ -44,6 +44,7 @@ stages:
           tenantId: $(service.Azure.TenantId)
           location: $(service.Develop.Location)
           resourceGroupName: $(service.Develop.ResourceGroupName)
+          subscriptionIdDevelop: $(service.Azure.SubscriptionIdDevelop)
   - stage: BUILD_FRONTEND
     displayName: "Build Static Frontend"
     jobs:
