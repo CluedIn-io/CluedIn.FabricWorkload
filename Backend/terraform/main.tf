@@ -57,7 +57,7 @@ resource "random_string" "unique" {
 # Storage connection string
 output "storage_connection_string" {
   value     = azurerm_storage_account.backend_storage.primary_connection_string
-  #sensitive = true
+  sensitive = true
 }
 
 
@@ -91,7 +91,8 @@ resource "azurerm_container_app" "backend" {
       memory = "1.0Gi"
       env {
         name  = "TableStorageConnectionString"
-        value = azurerm_storage_account.backend_storage.primary_connection_string
+        value = "DefaultEndpointsProtocol=https;AccountName=${azurerm_storage_account.backend_storage.name};AccountKey=${azurerm_storage_account.backend_storage.primary_access_key};EndpointSuffix=core.windows.net"
+
       }
       env {
         name  = "clientId"
