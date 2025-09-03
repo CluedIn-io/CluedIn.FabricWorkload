@@ -57,7 +57,7 @@ resource "random_string" "unique" {
 # Storage connection string
 output "storage_connection_string" {
   value     = azurerm_storage_account.backend_storage.primary_connection_string
-  sensitive = true
+  #sensitive = true
 }
 
 
@@ -90,7 +90,7 @@ resource "azurerm_container_app" "backend" {
       cpu    = 0.5
       memory = "1.0Gi"
       env {
-        name  = "STORAGE_CONNECTION_STRING"
+        name  = "TableStorageConnectionString"
         value = azurerm_storage_account.backend_storage.primary_connection_string
       }
       env {
@@ -102,6 +102,15 @@ resource "azurerm_container_app" "backend" {
         name  = "clientSecret"
         value = var.azure_client_secret
     }
+      env {
+        name  = "ASPNETCORE_ENVIRONMENT"
+        value = "Development"
+      }
+      env {
+        name  = "ItemMetadataStoreType"
+        value = "TableStorage"
+      }
+
     }
   }
 
