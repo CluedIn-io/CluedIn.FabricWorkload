@@ -35,7 +35,7 @@ resource "azurerm_role_assignment" "backend_acr_pull" {
 
 
 resource "azurerm_container_app_environment" "app_env" {
-  name                = "env-api-cluedin-backend-weu-dev"
+  name                = "env-cluedin-backend-weu-dev"
   location            = azurerm_resource_group.group.location
   resource_group_name = azurerm_resource_group.group.name
   tags = var.tags
@@ -66,7 +66,7 @@ output "storage_connection_string" {
 
 
 resource "azurerm_container_app" "backend" {
-  name                         = "api-api-cluedin-backend-weu-dev"
+  name                         = "api-cluedin-backend-weu-dev"
   resource_group_name          = azurerm_resource_group.group.name
   container_app_environment_id = azurerm_container_app_environment.app_env.id
   revision_mode                = "Single"
