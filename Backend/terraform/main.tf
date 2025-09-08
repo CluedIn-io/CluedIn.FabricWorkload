@@ -42,7 +42,7 @@ resource "azurerm_container_app_environment" "app_env" {
 }
 
 resource "azurerm_storage_account" "backend_storage" {
-  name                     = "stcluedinfabricbackendweudev"
+  name                     = "stcluedinbackendweudev"
   resource_group_name      = azurerm_resource_group.group.name
   location                 = azurerm_resource_group.group.location
   account_tier             = "Standard"
