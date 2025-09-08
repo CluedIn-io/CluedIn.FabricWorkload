@@ -77,6 +77,7 @@ resource "azurerm_cdn_frontdoor_route" "ui" {
   patterns_to_match    = ["/*"]
   https_redirect_enabled = true
   enabled              = true
+  cdn_frontdoor_custom_domain_ids = [azurerm_cdn_frontdoor_custom_domain.ui.id]
 }
 
 # Custom Domain
@@ -89,10 +90,6 @@ resource "azurerm_cdn_frontdoor_custom_domain" "ui" {
     certificate_type    = "ManagedCertificate"
     minimum_tls_version = "TLS12"
   }
-}
-resource "azurerm_cdn_frontdoor_custom_domain_association" "ui" {
-  cdn_frontdoor_custom_domain_id = azurerm_cdn_frontdoor_custom_domain.ui.id
-  cdn_frontdoor_route_ids        = [azurerm_cdn_frontdoor_route.ui.id]
 }
 
 data "azurerm_dns_zone" "main" {
