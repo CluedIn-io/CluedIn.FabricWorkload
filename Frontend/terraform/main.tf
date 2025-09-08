@@ -27,43 +27,76 @@ resource "azurerm_storage_account" "fabric_ui" {
   }
 }
 
-resource "azurerm_cdn_profile" "ui_cdn_profile" {
-  name                = "cluedinfabricui-cdn-profile"
-  location            = "global"
+resource "azurerm_cdn_frontdoor_profile" "ui" {
+  name                = "cluedinfabricui-fd-profile"
   resource_group_name = azurerm_resource_group.group.name
-  sku                 = "Standard_Microsoft" # Required for HTTPS
+  sku_name            = "Standard_AzureFrontDoor"
   tags                = var.tags
 }
 
-# -------------------------
-# CDN Endpoint (origin = storage static website)
-# -------------------------
-resource "azurerm_cdn_endpoint" "ui_cdn_endpoint" {
-  name                = "cluedinfabricui-cdn-endpoint"
-  profile_name        = azurerm_cdn_profile.ui_cdn_profile.name
-  resource_group_name = azurerm_resource_group.group.name
-  location            = "global"
-  origin_host_header  = azurerm_storage_account.fabric_ui.primary_web_host
-
-  origin {
-    name      = "fabricuistorage"
-    host_name = azurerm_storage_account.fabric_ui.primary_web_host
-  }
-
-  is_http_allowed  = true
-  is_https_allowed = true
-  tags             = var.tags
+resource "azurerm_cdn_frontdoor_endpoint" "ui" {
+  name                     = "cluedinfabricui-fd-endpoint"
+  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.ui.id
+  enabled                  = true
 }
 
-resource "azurerm_cdn_custom_domain" "ui_cdn_custom_domain" {
-  name                   = "fabric-ui-custom-domain"
-  profile_name           = azurerm_cdn_profile.ui_cdn_profile.name
-  endpoint_name          = azurerm_cdn_endpoint.ui_cdn_endpoint.name
-  resource_group_name    = azurerm_resource_group.group.name
-  host_name              = "${local.record_set_name}.${local.dns_zone_name}"
+resource "azurerm_cdn_frontdoor_origin_group" "ui" {
+  name                     = "fabricui-origins"
+  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.ui.id
+  session_affinity_enabled = false
 
-  # Free managed HTTPS certificate
-  custom_https_provisioning_enabled = true
+  load_balancing {
+    sample_size                        = 4
+    successful_samples_required        = 3
+    additional_latency_in_milliseconds = 0
+  }
+
+  health_probe {
+    interval_in_seconds = 120
+    path                = "/"
+    protocol            = "Https"
+    request_type        = "GET"
+  }
+}
+
+resource "azurerm_cdn_frontdoor_origin" "ui_storage" {
+  name                          = "fabricuistorage"
+  cdn_frontdoor_origin_group_id = azurerm_cdn_frontdoor_origin_group.ui.id
+  enabled                       = true
+  host_name                     = azurerm_storage_account.fabric_ui.primary_web_host
+  certificate_name_check_enabled = true
+
+  tls {
+    # Enforce HTTPS connection from Front Door to storage
+    minimum_tls_version = "TLS12"
+  }
+}
+resource "azurerm_cdn_frontdoor_route" "ui" {
+  name                          = "fabricui-route"
+  cdn_frontdoor_endpoint_id     = azurerm_cdn_frontdoor_endpoint.ui.id
+  cdn_frontdoor_origin_group_id = azurerm_cdn_frontdoor_origin_group.ui.id
+  cdn_frontdoor_origin_ids      = [azurerm_cdn_frontdoor_origin.ui_storage.id]
+
+  supported_protocols  = ["Http", "Https"]
+  patterns_to_match    = ["/*"]
+  https_redirect_enabled = true
+  enabled              = true
+}
+
+# Custom Domain
+resource "azurerm_cdn_frontdoor_custom_domain" "ui" {
+  name                     = "fabric-ui-domain"
+  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.ui.id
+  host_name                = "${local.record_set_name}.${local.dns_zone_name}"
+
+  tls {
+    certificate_type    = "ManagedCertificate"
+    minimum_tls_version = "TLS12"
+  }
+}
+resource "azurerm_cdn_frontdoor_custom_domain_association" "ui" {
+  cdn_frontdoor_custom_domain_id = azurerm_cdn_frontdoor_custom_domain.ui.id
+  cdn_frontdoor_route_ids        = [azurerm_cdn_frontdoor_route.ui.id]
 }
 
 data "azurerm_dns_zone" "main" {
@@ -79,7 +112,8 @@ resource "azurerm_dns_cname_record" "fabric_ui_cname" {
   zone_name           = data.azurerm_dns_zone.main.name
   resource_group_name = data.azurerm_dns_zone.main.resource_group_name
   ttl                 = 300
-  record              = azurerm_storage_account.fabric_ui.primary_web_host
+  #record              = azurerm_storage_account.fabric_ui.primary_web_host
+  record              = azurerm_cdn_frontdoor_endpoint.ui.host_name
 }
 
 
@@ -89,8 +123,8 @@ output "web_endpoint" {
 }
 
 output "cdn_endpoint" {
-  description = "CDN endpoint URL"
-  value       = "https://${azurerm_cdn_endpoint.ui_cdn_endpoint.host_name}"
+  description = "Front Door endpoint URL"
+  value       = "https://${azurerm_cdn_frontdoor_endpoint.ui.host_name}"
 }
 
 # Output Custom Domain URL
