@@ -66,10 +66,6 @@ resource "azurerm_cdn_frontdoor_origin" "ui_storage" {
   host_name                     = azurerm_storage_account.fabric_ui.primary_web_host
   certificate_name_check_enabled = true
 
-  tls {
-    # Enforce HTTPS connection from Front Door to storage
-    minimum_tls_version = "TLS12"
-  }
 }
 resource "azurerm_cdn_frontdoor_route" "ui" {
   name                          = "fabricui-route"
