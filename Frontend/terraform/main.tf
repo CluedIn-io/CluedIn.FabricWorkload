@@ -37,31 +37,8 @@ resource "azurerm_container_app_environment" "app_env" {
   tags = var.tags
 }
 
-resource "azurerm_storage_account" "frontend_storage" {
-  name                     = "stcluedinfrontendweudev"
-  resource_group_name      = azurerm_resource_group.group.name
-  location                 = azurerm_resource_group.group.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-  tags = var.tags
-}
-
-resource "random_string" "unique" {
-  length  = 6
-  upper   = false
-  lower   = true
-  numeric = true
-  special = false
-}
-
-output "storage_connection_string" {
-  value     = azurerm_storage_account.frontend_storage.primary_connection_string
-  sensitive = true
-}
-
-
 resource "azurerm_container_app" "frontend" {
-  name                         = "api-cluedin-frontend-weu-dev"
+  name                         = "ui-cluedin-frontend-weu-dev"
   resource_group_name          = azurerm_resource_group.group.name
   container_app_environment_id = azurerm_container_app_environment.app_env.id
   revision_mode                = "Single"
@@ -73,7 +50,7 @@ resource "azurerm_container_app" "frontend" {
   }
   ingress {
     external_enabled = true
-    target_port      = 5000
+    target_port      = 80
     traffic_weight {
       percentage = 100
       latest_revision = true
@@ -85,33 +62,10 @@ resource "azurerm_container_app" "frontend" {
   }
   template {
     container {
-      name   = "backend-api"
+      name   = "frontend-ui"
       image  = "${var.docker_image}:${var.image_tag}"
       cpu    = 0.5
       memory = "1.0Gi"
-      env {
-        name  = "TableStorageConnectionString"
-        value = "DefaultEndpointsProtocol=https;AccountName=${azurerm_storage_account.frontend_storage.name};AccountKey=${azurerm_storage_account.frontend_storage.primary_access_key};EndpointSuffix=core.windows.net"
-
-      }
-      env {
-        name  = "clientId"
-        value = var.azure_client_id
-      }
-
-      env {
-        name  = "clientSecret"
-        value = var.azure_client_secret
-    }
-      env {
-        name  = "ASPNETCORE_ENVIRONMENT"
-        value = "Development"
-      }
-      env {
-        name  = "ItemMetadataStoreType"
-        value = "TableStorage"
-      }
-
     }
     
   }
