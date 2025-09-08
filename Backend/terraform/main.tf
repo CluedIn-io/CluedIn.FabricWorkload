@@ -20,7 +20,7 @@ data "azurerm_container_registry" "acr" {
 }
 
 resource "azurerm_user_assigned_identity" "backend_identity" {
-  name                = "identity-cluedin-fabric-backend-west-eu-dev"
+  name                = "identity-cluedin-backendweu-dev"
   resource_group_name = azurerm_resource_group.group.name
   location            = azurerm_resource_group.group.location
   tags = var.tags
@@ -35,7 +35,7 @@ resource "azurerm_role_assignment" "backend_acr_pull" {
 
 
 resource "azurerm_container_app_environment" "app_env" {
-  name                = "env-cluedin-fabric-backend-west-eu-dev"
+  name                = "env-api-cluedin-backend-weu-dev"
   location            = azurerm_resource_group.group.location
   resource_group_name = azurerm_resource_group.group.name
   tags = var.tags
@@ -66,7 +66,7 @@ output "storage_connection_string" {
 
 
 resource "azurerm_container_app" "backend" {
-  name                         = "api-cluedin-fabric-backend-west-eu-dev"
+  name                         = "api-api-cluedin-backend-weu-dev"
   resource_group_name          = azurerm_resource_group.group.name
   container_app_environment_id = azurerm_container_app_environment.app_env.id
   revision_mode                = "Single"
@@ -82,9 +82,6 @@ resource "azurerm_container_app" "backend" {
     traffic_weight {
       percentage = 100
       latest_revision = true
-    }
-    custom_domain {
-      name = "fabric-api.cluedin-test.online"
     }
   }
   registry {
@@ -141,5 +138,6 @@ resource "azurerm_dns_cname_record" "fabric_api_dns" {
   zone_name           = data.azurerm_dns_zone.main.name
   resource_group_name = data.azurerm_dns_zone.main.resource_group_name
   ttl                 = 300
-  record              = azurerm_container_app.backend.ingress[0].fqdn
+  #record              = azurerm_container_app.backend.ingress[0].fqdn
+  record              = azurerm_container_app.backend.latest_revision_fqdn
 }
