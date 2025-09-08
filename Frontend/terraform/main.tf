@@ -78,6 +78,7 @@ resource "azurerm_cdn_frontdoor_route" "ui" {
   https_redirect_enabled = true
   enabled              = true
   cdn_frontdoor_custom_domain_ids = [azurerm_cdn_frontdoor_custom_domain.ui.id]
+  link_to_default_domain = false
 }
 
 # Custom Domain
