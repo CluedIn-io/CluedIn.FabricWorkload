@@ -24,7 +24,7 @@ WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
 
 # Copy build artifacts from build stage
-COPY --from=build /app/dist ./   # 👈 change "dist" if your build output is different
+COPY --from=build /app/dist ./  
 
 # Copy custom Nginx config (optional)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
