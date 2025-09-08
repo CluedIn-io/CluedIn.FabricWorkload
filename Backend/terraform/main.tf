@@ -9,6 +9,7 @@ variable "location" {
 resource "azurerm_resource_group" "group" {
   name     = var.resource_group_name
   location = var.location
+  tags = var.tags
 }
 
 
@@ -19,9 +20,10 @@ data "azurerm_container_registry" "acr" {
 }
 
 resource "azurerm_user_assigned_identity" "backend_identity" {
-  name                = "backend-identity"
+  name                = "identity-cluedin-fabric-backend-west-eu-dev"
   resource_group_name = azurerm_resource_group.group.name
   location            = azurerm_resource_group.group.location
+  tags = var.tags
 }
 
 
@@ -33,17 +35,19 @@ resource "azurerm_role_assignment" "backend_acr_pull" {
 
 
 resource "azurerm_container_app_environment" "app_env" {
-  name                = "backend-env"
+  name                = "env-cluedin-fabric-backend-west-eu-dev"
   location            = azurerm_resource_group.group.location
   resource_group_name = azurerm_resource_group.group.name
+  tags = var.tags
 }
 
 resource "azurerm_storage_account" "backend_storage" {
-  name                     = "backendstor${random_string.unique.result}"
+  name                     = "stcluedinfabricbackendweudev"
   resource_group_name      = azurerm_resource_group.group.name
   location                 = azurerm_resource_group.group.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
+  tags = var.tags
 }
 
 resource "random_string" "unique" {
@@ -62,10 +66,11 @@ output "storage_connection_string" {
 
 
 resource "azurerm_container_app" "backend" {
-  name                         = "backend-api"
+  name                         = "api-cluedin-fabric-backend-west-eu-dev"
   resource_group_name          = azurerm_resource_group.group.name
   container_app_environment_id = azurerm_container_app_environment.app_env.id
   revision_mode                = "Single"
+  tags = var.tags
 
   identity {
     type         = "UserAssigned"
@@ -77,6 +82,9 @@ resource "azurerm_container_app" "backend" {
     traffic_weight {
       percentage = 100
       latest_revision = true
+    }
+    custom_domain {
+      name = "fabric-api.cluedin-test.online"
     }
   }
   registry {
@@ -113,6 +121,7 @@ resource "azurerm_container_app" "backend" {
       }
 
     }
+    
   }
 
   depends_on = [

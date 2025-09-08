@@ -29,3 +29,12 @@ variable "azure_subscription_id_develop" {
 variable "image_tag" {
   type = string
 }
+variable "tags" {
+  type = map(string)
+  default = {
+    Customer   = "CluedIn"
+    Purpose    = "Fabric Support"
+    Department = "Chronos"
+    CreatedBy  = "mis@cluedin.com"
+  }
+}
