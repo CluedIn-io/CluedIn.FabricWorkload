@@ -11,87 +11,116 @@ resource "azurerm_resource_group" "group" {
   tags = var.tags
 }
 
-resource "azurerm_storage_account" "fabric_ui" {
-  name                     = "stcluedinfabricweudev"
-  resource_group_name      = var.resource_group_name
-  location                 = var.location
+data "azurerm_container_registry" "acr" {
+  name                = "cluedindev"
+  resource_group_name = "oversight-rg"
+  provider = azurerm.cluedin_develop
+}
+
+resource "azurerm_user_assigned_identity" "frontend_identity" {
+  name                = "identity-cluedin-frontendweu-dev"
+  resource_group_name = azurerm_resource_group.group.name
+  location            = azurerm_resource_group.group.location
+  tags = var.tags
+}
+
+resource "azurerm_role_assignment" "frontend_acr_pull" {
+  scope                = data.azurerm_container_registry.acr.id
+  role_definition_name = "AcrPull"
+  principal_id         = azurerm_user_assigned_identity.frontend_identity.principal_id
+}
+
+resource "azurerm_container_app_environment" "app_env" {
+  name                = "env-cluedin-frontend-weu-dev"
+  location            = azurerm_resource_group.group.location
+  resource_group_name = azurerm_resource_group.group.name
+  tags = var.tags
+}
+
+resource "azurerm_storage_account" "frontend_storage" {
+  name                     = "stcluedinfrontendweudev"
+  resource_group_name      = azurerm_resource_group.group.name
+  location                 = azurerm_resource_group.group.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
   tags = var.tags
+}
+
+resource "random_string" "unique" {
+  length  = 6
+  upper   = false
+  lower   = true
+  numeric = true
+  special = false
+}
+
+output "storage_connection_string" {
+  value     = azurerm_storage_account.frontend_storage.primary_connection_string
+  sensitive = true
+}
+
+
+resource "azurerm_container_app" "frontend" {
+  name                         = "api-cluedin-frontend-weu-dev"
+  resource_group_name          = azurerm_resource_group.group.name
+  container_app_environment_id = azurerm_container_app_environment.app_env.id
+  revision_mode                = "Single"
+  tags = var.tags
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.frontend_identity.id]
+  }
+  ingress {
+    external_enabled = true
+    target_port      = 5000
+    traffic_weight {
+      percentage = 100
+      latest_revision = true
+    }
+  }
+  registry {
+    server   = data.azurerm_container_registry.acr.login_server
+    identity = azurerm_user_assigned_identity.frontend_identity.id
+  }
+  template {
+    container {
+      name   = "backend-api"
+      image  = "${var.docker_image}:${var.image_tag}"
+      cpu    = 0.5
+      memory = "1.0Gi"
+      env {
+        name  = "TableStorageConnectionString"
+        value = "DefaultEndpointsProtocol=https;AccountName=${azurerm_storage_account.frontend_storage.name};AccountKey=${azurerm_storage_account.frontend_storage.primary_access_key};EndpointSuffix=core.windows.net"
+
+      }
+      env {
+        name  = "clientId"
+        value = var.azure_client_id
+      }
+
+      env {
+        name  = "clientSecret"
+        value = var.azure_client_secret
+    }
+      env {
+        name  = "ASPNETCORE_ENVIRONMENT"
+        value = "Development"
+      }
+      env {
+        name  = "ItemMetadataStoreType"
+        value = "TableStorage"
+      }
+
+    }
+    
+  }
+  
   depends_on = [
-    azurerm_resource_group.group
+    azurerm_role_assignment.frontend_acr_pull
   ]
-  static_website {
-    index_document = "index.html"
-    error_404_document = "index.html"
-  }
 }
 
-resource "azurerm_cdn_frontdoor_profile" "ui" {
-  name                = "cluedinfabricui-fd-profile"
-  resource_group_name = azurerm_resource_group.group.name
-  sku_name            = "Standard_AzureFrontDoor"
-  tags                = var.tags
-}
-
-resource "azurerm_cdn_frontdoor_endpoint" "ui" {
-  name                     = "cluedinfabricui-fd-endpoint"
-  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.ui.id
-  enabled                  = true
-}
-
-resource "azurerm_cdn_frontdoor_origin_group" "ui" {
-  name                     = "fabricui-origins"
-  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.ui.id
-  session_affinity_enabled = false
-
-  load_balancing {
-    sample_size                        = 4
-    successful_samples_required        = 3
-    additional_latency_in_milliseconds = 0
-  }
-
-  health_probe {
-    interval_in_seconds = 120
-    path                = "/"
-    protocol            = "Https"
-    request_type        = "GET"
-  }
-}
-
-resource "azurerm_cdn_frontdoor_origin" "ui_storage" {
-  name                          = "fabricuistorage"
-  cdn_frontdoor_origin_group_id = azurerm_cdn_frontdoor_origin_group.ui.id
-  enabled                       = true
-  host_name                     = azurerm_storage_account.fabric_ui.primary_web_host
-  certificate_name_check_enabled = true
-
-}
-resource "azurerm_cdn_frontdoor_route" "ui" {
-  name                          = "fabricui-route"
-  cdn_frontdoor_endpoint_id     = azurerm_cdn_frontdoor_endpoint.ui.id
-  cdn_frontdoor_origin_group_id = azurerm_cdn_frontdoor_origin_group.ui.id
-  cdn_frontdoor_origin_ids      = [azurerm_cdn_frontdoor_origin.ui_storage.id]
-
-  supported_protocols  = ["Http", "Https"]
-  patterns_to_match    = ["/*"]
-  https_redirect_enabled = true
-  enabled              = true
-  cdn_frontdoor_custom_domain_ids = [azurerm_cdn_frontdoor_custom_domain.ui.id]
-  link_to_default_domain = false
-}
-
-# Custom Domain
-resource "azurerm_cdn_frontdoor_custom_domain" "ui" {
-  name                     = "fabric-ui-domain"
-  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.ui.id
-  host_name                = "${local.record_set_name}.${local.dns_zone_name}"
-
-  tls {
-    certificate_type    = "ManagedCertificate"
-    minimum_tls_version = "TLS12"
-  }
-}
 
 data "azurerm_dns_zone" "main" {
   name                = "cluedin-test.online"
@@ -99,29 +128,12 @@ data "azurerm_dns_zone" "main" {
   provider = azurerm.cluedin_develop
 }
 
-
-resource "azurerm_dns_cname_record" "fabric_ui_cname" {
+resource "azurerm_dns_cname_record" "fabric_api_dns" {
   provider            = azurerm.cluedin_develop
   name                = "fabric-ui"
   zone_name           = data.azurerm_dns_zone.main.name
   resource_group_name = data.azurerm_dns_zone.main.resource_group_name
   ttl                 = 300
-  #record              = azurerm_storage_account.fabric_ui.primary_web_host
-  record              = azurerm_cdn_frontdoor_endpoint.ui.host_name
-}
-
-
-# Output Static Website URL
-output "web_endpoint" {
-  value = azurerm_storage_account.fabric_ui.primary_web_endpoint
-}
-
-output "cdn_endpoint" {
-  description = "Front Door endpoint URL"
-  value       = "https://${azurerm_cdn_frontdoor_endpoint.ui.host_name}"
-}
-
-# Output Custom Domain URL
-output "custom_domain_url" {
-  value = "https://${local.record_set_name}.${local.dns_zone_name}"
+  #record              = azurerm_container_app.backend.ingress[0].fqdn
+  record              = azurerm_container_app.frontend.latest_revision_fqdn
 }

@@ -12,6 +12,18 @@ pool:
 variables:
 - group: FabricService
 
+- name: ACR_NAME
+  value: cluedindev
+
+- name: containerAppName
+  value: fabricworkloadbackend-api
+
+- name: IMAGE_TAG
+  value: $(Build.BuildId)
+
+- name: ENVIRONMENT
+  value: test
+
 resources:
   repositories:
     - repository: templates
@@ -21,30 +33,6 @@ resources:
       ref: refs/heads/refactor
 
 stages:
-  - stage: DEPLOY_STAGE_DEVELOP
-    displayName: "Deploy Fabric Frontend - Dev"
-    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'test'))
-    variables:
-      - name: environment
-        value: "test"
-    jobs:
-      - template: ./templates/deploy-infrastructure.yml
-        parameters:
-          environment: test
-          deploymentEnvironment: fabric-dev
-          terraformStorage: $(service.Terraform.StorageAccount)
-          terraformContainer: $(service.Terraform.Container)
-          terraformAccessKey: $(service.Terraform.AccessKey)
-          terraformDir: $(System.DefaultWorkingDirectory)/Frontend/terraform
-          terraformOutputPath: $(Pipeline.Workspace)/Frontend/terraform/$(environment)
-          terraformPlanPath: $(Pipeline.Workspace)/Frontend/terraform/$(environment)/tfplan
-          subscriptionId: $(service.Azure.SubscriptionId)
-          clientId: $(service.Azure.ClientId)
-          clientSecret: $(service.Azure.ClientSecret)
-          tenantId: $(service.Azure.TenantId)
-          location: $(service.Develop.Location)
-          resourceGroupName: $(service.Develop.ResourceGroupName)
-          subscriptionIdDevelop: $(service.Azure.SubscriptionIdDevelop)
   - stage: BUILD_FRONTEND
     displayName: "Build Static Frontend"
     jobs:
@@ -71,53 +59,45 @@ stages:
               export NODE_OPTIONS="--max_old_space_size=4096"
               npm run build:prod
             displayName: "Build UI"
-
-          - task: PowerShell@2
-            displayName: 'Login to Azure with Service Principal'
+          - task: Docker@2
+            displayName: "docker - Build"
             inputs:
-              targetType: 'inline'
-              pwsh: true
-              script: |
-                az login --service-principal `
-                  --username $env:AZURE_CLIENT_ID `
-                  --password $env:AZURE_CLIENT_SECRET `
-                  --tenant $env:AZURE_TENANT_ID
-            env:
-              AZURE_CLIENT_ID: $(service.Azure.ClientId)
-              AZURE_CLIENT_SECRET: $(service.Azure.ClientSecret)
-              AZURE_TENANT_ID: $(service.Azure.TenantId)
+              containerRegistry: 'CluedIn Docker Hub'   
+              repository: 'cluedin/cluedin.fabricworkloadfrontend-ui'              
+              command: 'build'
+              Dockerfile: Frontend/Dockerfile
+              buildContext: Frontend
+              tags: |
+                $(IMAGE_TAG)
+          - template: common/docker.push.yml@templates
+            parameters:
+              containerRegistry: 'CluedIn Docker Hub'
+              repository: 'cluedin/cluedin.fabricworkloadfrontend-ui'
+              tags: '$(IMAGE_TAG)'
+  - stage: DEPLOY_STAGE_DEVELOP
+    displayName: "Deploy Fabric Frontend - Dev"
+    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'test'))
+    variables:
+      - name: environment
+        value: "test"
+    jobs:
+      - template: ./templates/deploy-infrastructure.yml
+        parameters:
+          environment: test
+          deploymentEnvironment: fabric-dev
+          terraformStorage: $(service.Terraform.StorageAccount)
+          terraformContainer: $(service.Terraform.Container)
+          terraformAccessKey: $(service.Terraform.AccessKey)
+          terraformDir: $(System.DefaultWorkingDirectory)/Frontend/terraform
+          terraformOutputPath: $(Pipeline.Workspace)/Frontend/terraform/$(environment)
+          terraformPlanPath: $(Pipeline.Workspace)/Frontend/terraform/$(environment)/tfplan
+          subscriptionId: $(service.Azure.SubscriptionId)
+          clientId: $(service.Azure.ClientId)
+          clientSecret: $(service.Azure.ClientSecret)
+          tenantId: $(service.Azure.TenantId)
+          location: $(service.Develop.Location)
+          resourceGroupName: $(service.Develop.ResourceGroupName)
+          subscriptionIdDevelop: $(service.Azure.SubscriptionIdDevelop)
+          dockerImage: $(service.shared.DockerImageFrontend)
+          imageTag: $(IMAGE_TAG)
 
-          - task: PowerShell@2
-            displayName: 'Enable Static Website Hosting'
-            inputs:
-              targetType: 'inline'
-              pwsh: true
-              script: |
-                az storage blob service-properties update `
-                  --account-name stcluedinfabricweudev `
-                  --static-website `
-                  --index-document index.html `
-                  --404-document index.html `
-                  --auth-mode login
-
-          - task: PowerShell@2
-            displayName: 'Upload UI to Static Site'
-            inputs:
-              targetType: 'inline'
-              pwsh: true
-              script: |
-                Write-Host "🔎 Detecting Webpack output path..."
-                $rawOutput = & node -e "const config = require('./Frontend/tools/webpack.config.js'); console.log(config.output.path)"
-                $outputPath = $rawOutput -split "`n" | Select-Object -Last 1
-                $outputPath = $outputPath.Trim()
-                Write-Host "✅ Detected Webpack output path: $outputPath"
-                
-                if (-Not (Test-Path $outputPath)) {
-                  Write-Error "❌ ERROR: Webpack output folder '$outputPath' not found!"
-                  exit 1
-                  }
-                az storage blob upload-batch `
-                  --account-name stcluedinfabricweudev `
-                  --destination '$web' `
-                  --source $outputPath `
-                  --auth-mode login

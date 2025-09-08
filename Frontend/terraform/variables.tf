@@ -24,7 +24,12 @@ variable "environment" {
 variable "location" {
   type = string
 }
-
+variable "docker_image" {
+  type = string
+}
+variable "image_tag" {
+  type = string
+}
 # Resource group
 variable "resource_group_name" {
   type = string
