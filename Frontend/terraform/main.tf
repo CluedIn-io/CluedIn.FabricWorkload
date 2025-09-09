@@ -91,3 +91,60 @@ resource "azurerm_dns_cname_record" "fabric_api_dns" {
   #record              = azurerm_container_app.backend.ingress[0].fqdn
   record              = azurerm_container_app.frontend.latest_revision_fqdn
 }
+
+data "azapi_resource" "frontend_app" {
+  type      = "Microsoft.App/containerApps@2023-05-01"
+  name      = azurerm_container_app.frontend.name
+  parent_id = azurerm_resource_group.group.id
+}
+
+# Extract verification ID
+locals {
+  custom_domain_verification_id = data.azapi_resource.frontend_app.output.customDomainVerificationId
+}
+
+# TXT record for domain verification
+resource "azurerm_dns_txt_record" "frontend_verification" {
+  provider            = azurerm.cluedin_develop
+  name                = "asuid.${local.record_set_name}"
+  zone_name           = data.azurerm_dns_zone.main.name
+  resource_group_name = data.azurerm_dns_zone.main.resource_group_name
+  ttl                 = 300
+
+  record {
+    value = local.custom_domain_verification_id
+  }
+}
+
+# Managed Certificate
+resource "azapi_resource" "frontend_cert" {
+  type      = "Microsoft.App/managedEnvironments/certificates@2023-05-01"
+  name      = "fabric-ui-cert"
+  parent_id = azurerm_container_app_environment.app_env.id
+
+  body = jsonencode({
+    properties = {
+      managed     = true
+      subjectName = "fabric-ui.cluedin-test.online"
+    }
+  })
+}
+
+# Bind custom domain + cert
+resource "azapi_resource" "frontend_domain_binding" {
+  type      = "Microsoft.App/containerApps/customDomains@2023-05-01"
+  name      = "fabric-ui"
+  parent_id = azurerm_container_app.frontend.id
+
+  body = jsonencode({
+    properties = {
+      hostname      = "fabric-ui.cluedin-test.online"
+      certificateId = azapi_resource.frontend_cert.id
+    }
+  })
+
+  depends_on = [
+    azurerm_dns_txt_record.frontend_verification,
+    azapi_resource.frontend_cert
+  ]
+}

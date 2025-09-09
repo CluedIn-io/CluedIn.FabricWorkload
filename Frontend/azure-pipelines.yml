@@ -4,7 +4,7 @@
 # https://aka.ms/yaml
 
 trigger:
-- test
+- develop
 
 pool:
   vmImage: ubuntu-latest
@@ -22,7 +22,7 @@ variables:
   value: $(Build.BuildId)
 
 - name: ENVIRONMENT
-  value: test
+  value: develop
 
 resources:
   repositories:
@@ -76,14 +76,14 @@ stages:
               tags: '$(IMAGE_TAG)'
   - stage: DEPLOY_STAGE_DEVELOP
     displayName: "Deploy Fabric Frontend - Dev"
-    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'test'))
+    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'develop'))
     variables:
       - name: environment
-        value: "test"
+        value: "develop"
     jobs:
       - template: ./templates/deploy-infrastructure.yml
         parameters:
-          environment: test
+          environment: develop
           deploymentEnvironment: fabric-dev
           terraformStorage: $(service.Terraform.StorageAccount)
           terraformContainer: $(service.Terraform.Container)
