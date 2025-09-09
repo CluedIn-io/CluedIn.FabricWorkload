@@ -10,6 +10,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = ">=3.75.0"
     }
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 1.13"
+    }
   }
 }
 
@@ -30,11 +34,3 @@ provider "azurerm" {
   alias = "cluedin_develop"
 }
 
-terraform {
-  required_providers {
-    azapi = {
-      source  = "Azure/azapi"
-      version = "~> 1.13"
-    }
-  }
-}
