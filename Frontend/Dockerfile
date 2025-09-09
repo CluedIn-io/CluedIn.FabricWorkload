@@ -26,8 +26,8 @@ RUN rm -rf ./*
 # Copy build artifacts from build stage
 COPY --from=build /app/dist ./  
 
-# Copy custom Nginx config (optional)
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
+# Expose port 80 for container app ingress
 EXPOSE 80
+
+# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
