@@ -82,6 +82,18 @@ data "azurerm_dns_zone" "main" {
   provider            = azurerm.cluedin_develop
 }
 
+# CNAME to Container App
+resource "azurerm_dns_cname_record" "fabric_ui_cname" {
+  provider            = azurerm.cluedin_develop
+  name                = local.record_set_name
+  zone_name           = data.azurerm_dns_zone.main.name
+  resource_group_name = data.azurerm_dns_zone.main.resource_group_name
+  ttl                 = 300
+  record              = azurerm_container_app.frontend.latest_revision_fqdn
+
+
+}
+
 # TXT record for domain verification
 resource "azurerm_dns_txt_record" "frontend_verification" {
   provider            = azurerm.cluedin_develop
@@ -105,7 +117,7 @@ resource "azapi_resource" "frontend_cert" {
 
   body = jsonencode({
     properties = {
-      managed     = true
+      domainControlValidation = "CNAME"
       subjectName = "fabric-ui.cluedin-test.online"
     }
   })
@@ -125,21 +137,10 @@ resource "azapi_resource" "frontend_domain_binding" {
   })
 
   depends_on = [
+    azurerm_dns_cname_record.fabric_ui_cname,
     azurerm_dns_txt_record.frontend_verification,
-    azapi_resource.frontend_cert
+    azapi_resource.frontend_cert,
   ]
 }
 
-# CNAME to Container App
-resource "azurerm_dns_cname_record" "fabric_api_dns" {
-  provider            = azurerm.cluedin_develop
-  name                = local.record_set_name
-  zone_name           = data.azurerm_dns_zone.main.name
-  resource_group_name = data.azurerm_dns_zone.main.resource_group_name
-  ttl                 = 300
-  record              = azurerm_container_app.frontend.latest_revision_fqdn
 
-  depends_on = [
-    azapi_resource.frontend_domain_binding
-  ]
-}
