@@ -121,6 +121,8 @@ resource "azapi_resource" "frontend_cert" {
   type      = "Microsoft.App/managedEnvironments/certificates@2023-05-01"
   name      = "fabric-ui-cert"
   parent_id = azurerm_container_app_environment.app_env.id
+  location  = azurerm_container_app_environment.app_env.location
+  schema_validation_enabled = false
 
   body = jsonencode({
     properties = {
