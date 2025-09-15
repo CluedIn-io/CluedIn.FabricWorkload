@@ -8,20 +8,20 @@ locals {
 resource "azurerm_resource_group" "group" {
   name     = var.resource_group_name
   location = var.location
-  tags = var.tags
+  tags     = var.tags
 }
 
 data "azurerm_container_registry" "acr" {
   name                = "cluedindev"
   resource_group_name = "oversight-rg"
-  provider = azurerm.cluedin_develop
+  provider            = azurerm.cluedin_develop
 }
 
 resource "azurerm_user_assigned_identity" "frontend_identity" {
   name                = "identity-cluedin-frontendweu-dev"
   resource_group_name = azurerm_resource_group.group.name
   location            = azurerm_resource_group.group.location
-  tags = var.tags
+  tags                = var.tags
 }
 
 resource "azurerm_role_assignment" "frontend_acr_pull" {
@@ -34,7 +34,7 @@ resource "azurerm_container_app_environment" "app_env" {
   name                = "env-cluedin-frontend-weu-dev"
   location            = azurerm_resource_group.group.location
   resource_group_name = azurerm_resource_group.group.name
-  tags = var.tags
+  tags                = var.tags
 }
 
 resource "azurerm_container_app" "frontend" {
@@ -42,24 +42,28 @@ resource "azurerm_container_app" "frontend" {
   resource_group_name          = azurerm_resource_group.group.name
   container_app_environment_id = azurerm_container_app_environment.app_env.id
   revision_mode                = "Single"
-  tags = var.tags
+  tags                         = var.tags
 
   identity {
     type         = "UserAssigned"
     identity_ids = [azurerm_user_assigned_identity.frontend_identity.id]
   }
+
   ingress {
     external_enabled = true
     target_port      = 80
+
     traffic_weight {
-      percentage = 100
-      latest_revision = true
+      percentage       = 100
+      latest_revision  = true
     }
   }
+
   registry {
     server   = data.azurerm_container_registry.acr.login_server
     identity = azurerm_user_assigned_identity.frontend_identity.id
   }
+
   template {
     container {
       name   = "frontend-ui"
@@ -67,40 +71,15 @@ resource "azurerm_container_app" "frontend" {
       cpu    = 0.5
       memory = "1.0Gi"
     }
-    
   }
-  
-  depends_on = [
-    azurerm_role_assignment.frontend_acr_pull
-  ]
-}
 
+  depends_on = [azurerm_role_assignment.frontend_acr_pull]
+}
 
 data "azurerm_dns_zone" "main" {
   name                = "cluedin-test.online"
   resource_group_name = "cluedin-networking"
-  provider = azurerm.cluedin_develop
-}
-
-resource "azurerm_dns_cname_record" "fabric_api_dns" {
   provider            = azurerm.cluedin_develop
-  name                = "fabric-ui"
-  zone_name           = data.azurerm_dns_zone.main.name
-  resource_group_name = data.azurerm_dns_zone.main.resource_group_name
-  ttl                 = 300
-  #record              = azurerm_container_app.backend.ingress[0].fqdn
-  record              = azurerm_container_app.frontend.latest_revision_fqdn
-}
-
-data "azapi_resource" "frontend_app" {
-  type      = "Microsoft.App/containerApps@2023-05-01"
-  name      = azurerm_container_app.frontend.name
-  parent_id = azurerm_resource_group.group.id
-}
-
-# Extract verification ID
-locals {
-  custom_domain_verification_id = data.azapi_resource.frontend_app.output.customDomainVerificationId
 }
 
 # TXT record for domain verification
@@ -112,7 +91,7 @@ resource "azurerm_dns_txt_record" "frontend_verification" {
   ttl                 = 300
 
   record {
-    value = local.custom_domain_verification_id
+    value = azurerm_container_app.frontend.custom_domain_verification_id
   }
 }
 
@@ -122,7 +101,6 @@ resource "azapi_resource" "frontend_cert" {
   name      = "fabric-ui-cert"
   parent_id = azurerm_container_app_environment.app_env.id
   location  = azurerm_container_app_environment.app_env.location
-  schema_validation_enabled = false
 
   body = jsonencode({
     properties = {
@@ -148,5 +126,19 @@ resource "azapi_resource" "frontend_domain_binding" {
   depends_on = [
     azurerm_dns_txt_record.frontend_verification,
     azapi_resource.frontend_cert
+  ]
+}
+
+# CNAME to Container App
+resource "azurerm_dns_cname_record" "fabric_api_dns" {
+  provider            = azurerm.cluedin_develop
+  name                = local.record_set_name
+  zone_name           = data.azurerm_dns_zone.main.name
+  resource_group_name = data.azurerm_dns_zone.main.resource_group_name
+  ttl                 = 300
+  record              = azurerm_container_app.frontend.latest_revision_fqdn
+
+  depends_on = [
+    azapi_resource.frontend_domain_binding
   ]
 }
