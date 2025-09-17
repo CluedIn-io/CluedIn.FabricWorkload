@@ -2,8 +2,7 @@ locals {
   dns_zone_name       = "cluedin-test.online.com"    
   dns_resource_group  = "cluedin-networking"         
   record_set_name     = "fabric-ui"  
-  frontend_cert_arm_id = "/subscriptions/${var.azure_subscription_id}/resourceGroups/${azurerm_resource_group.group.name}/providers/Microsoft.App/managedEnvironments/${azurerm_container_app_environment.app_env.name}/managedCertificates/fabric-ui-cert"
-
+  
 }
 
 # Resource group
@@ -83,10 +82,6 @@ data "azurerm_dns_zone" "main" {
   resource_group_name = "cluedin-networking"
   provider            = azurerm.cluedin_develop
 }
-data "azurerm_container_app" "frontend" {
-  name                = azurerm_container_app.frontend.name
-  resource_group_name = azurerm_container_app.frontend.resource_group_name
-}
 
 # CNAME to Container App
 resource "azurerm_dns_cname_record" "fabric_ui_cname" {
@@ -112,89 +107,22 @@ resource "azurerm_dns_txt_record" "frontend_verification" {
     value = azurerm_container_app.frontend.custom_domain_verification_id
   }
 }
-resource "time_sleep" "wait_dns" {
+
+
+resource "azurerm_container_app_custom_domain" "frontend" {
+  name             = "fabric-ui.cluedin-test.online"
+  container_app_id = azurerm_container_app.frontend.id
+
+  lifecycle {
+    
+    ignore_changes = [
+      certificate_binding_type,
+      container_app_environment_certificate_id,
+    ]
+  }
+
   depends_on = [
     azurerm_dns_cname_record.fabric_ui_cname,
     azurerm_dns_txt_record.frontend_verification
   ]
-  create_duration = "300s"
-}
-resource "azapi_resource" "frontend_domain_binding_nocert" {
-  type      = "Microsoft.App/containerApps/customDomains@2023-08-01-preview"
-  name      = "fabric-ui-nocert"
-  parent_id = azurerm_container_app.frontend.id
-  schema_validation_enabled = false
-  body = jsonencode({
-    properties = {
-      hostname = "fabric-ui.cluedin-test.online"
-    }
-  })
-
-  depends_on = [
-    azurerm_dns_cname_record.fabric_ui_cname,
-    azurerm_dns_txt_record.frontend_verification,
-    azurerm_container_app.frontend,
-    time_sleep.wait_dns
-  ]
-}
-data "external" "wait_domain_verified" {
-  program = ["bash", "-c", <<EOT
-    attempts=0
-    max_attempts=30
-    while [ $attempts -lt $max_attempts ]; do
-      status=$(az containerapp custom-domain show --name ui-cluedin-frontend-weu-dev --resource-group rg-cluedin-fabric-weu-dev --hostname fabric-ui.cluedin-test.online --query "properties.provisioningState" -o tsv)
-      if [ "$status" = "Succeeded" ]; then
-        exit 0
-      fi
-      echo "Waiting for domain verification..."
-      sleep 10
-      attempts=$((attempts+1))
-    done
-    echo "Domain verification not completed in time" >&2
-    exit 1
-  EOT
-  ]
-  depends_on = [azapi_resource.frontend_domain_binding_nocert]
-}
-# Managed Certificate
-resource "azapi_resource" "frontend_cert" {
-  type      = "Microsoft.App/managedEnvironments/managedCertificates@2025-01-01"
-  name      = "fabric-ui-cert"
-  parent_id = azurerm_container_app_environment.app_env.id
-  location  = azurerm_container_app_environment.app_env.location
-  schema_validation_enabled = false
-
-  body = jsonencode({
-    properties = {
-      subjectName = "fabric-ui.cluedin-test.online"
-      domainControlValidation = "CNAME"
-
-    }
-  })
-  depends_on = [
-    azapi_resource.frontend_domain_binding_nocert
-  ]
-}
-
-
-# Bind custom domain + cert
-resource "azapi_resource" "frontend_domain_binding" {
-  type      = "Microsoft.App/containerApps/customDomains@2023-08-01-preview"
-  name      = "fabric-ui"
-  parent_id = azurerm_container_app.frontend.id
-  schema_validation_enabled = false
-  body = jsonencode({
-    properties = {
-      hostname      = "fabric-ui.cluedin-test.online"
-      certificateId = local.frontend_cert_arm_id
-    }
-  })
-
-  depends_on = [
-    azapi_resource.frontend_cert
-  ]
-}
-
-output "frontend_cert_arm_id" {
-  value = azapi_resource.frontend_cert.id
 }
