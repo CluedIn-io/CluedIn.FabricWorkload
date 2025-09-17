@@ -107,6 +107,23 @@ resource "azurerm_dns_txt_record" "frontend_verification" {
   }
 }
 
+resource "azapi_resource" "frontend_domain_binding_nocert" {
+  type      = "Microsoft.App/containerApps/customDomains@2023-05-01"
+  name      = "fabric-ui-nocert"
+  parent_id = azurerm_container_app.frontend.id
+
+  body = jsonencode({
+    properties = {
+      hostname = "fabric-ui.cluedin-test.online"
+    }
+  })
+
+  depends_on = [
+    azurerm_dns_cname_record.fabric_ui_cname,
+    azurerm_dns_txt_record.frontend_verification,
+  ]
+}
+
 # Managed Certificate
 resource "azapi_resource" "frontend_cert" {
   type      = "Microsoft.App/managedEnvironments/managedCertificates@2025-01-01"
@@ -122,6 +139,9 @@ resource "azapi_resource" "frontend_cert" {
 
     }
   })
+  depends_on = [
+    azapi_resource.frontend_domain_binding_nocert
+  ]
 }
 
 # Bind custom domain + cert
@@ -138,9 +158,7 @@ resource "azapi_resource" "frontend_domain_binding" {
   })
 
   depends_on = [
-    azurerm_dns_cname_record.fabric_ui_cname,
-    azurerm_dns_txt_record.frontend_verification,
-    azapi_resource.frontend_cert,
+    azapi_resource.frontend_cert
   ]
 }
 
