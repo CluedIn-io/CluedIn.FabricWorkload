@@ -158,7 +158,7 @@ resource "azapi_resource" "frontend_domain_binding" {
   })
 
   depends_on = [
-    azapi_resource.frontend_cert
+    azapi_resource.frontend_cert,
   ]
 }
 
