@@ -117,7 +117,7 @@ resource "time_sleep" "wait_dns" {
     azurerm_dns_cname_record.fabric_ui_cname,
     azurerm_dns_txt_record.frontend_verification
   ]
-  create_duration = "90s"
+  create_duration = "300s"
 }
 resource "azapi_resource" "frontend_domain_binding_nocert" {
   type      = "Microsoft.App/containerApps/customDomains@2023-08-01-preview"
@@ -137,7 +137,25 @@ resource "azapi_resource" "frontend_domain_binding_nocert" {
     time_sleep.wait_dns
   ]
 }
-
+data "external" "wait_domain_verified" {
+  program = ["bash", "-c", <<EOT
+    attempts=0
+    max_attempts=30
+    while [ $attempts -lt $max_attempts ]; do
+      status=$(az containerapp custom-domain show --name ui-cluedin-frontend-weu-dev --resource-group rg-cluedin-fabric-weu-dev --hostname fabric-ui.cluedin-test.online --query "properties.provisioningState" -o tsv)
+      if [ "$status" = "Succeeded" ]; then
+        exit 0
+      fi
+      echo "Waiting for domain verification..."
+      sleep 10
+      attempts=$((attempts+1))
+    done
+    echo "Domain verification not completed in time" >&2
+    exit 1
+  EOT
+  ]
+  depends_on = [azapi_resource.frontend_domain_binding_nocert]
+}
 # Managed Certificate
 resource "azapi_resource" "frontend_cert" {
   type      = "Microsoft.App/managedEnvironments/managedCertificates@2025-01-01"
