@@ -82,6 +82,10 @@ data "azurerm_dns_zone" "main" {
   resource_group_name = "cluedin-networking"
   provider            = azurerm.cluedin_develop
 }
+data "azurerm_container_app" "frontend" {
+  name                = azurerm_container_app.frontend.name
+  resource_group_name = azurerm_container_app.frontend.resource_group_name
+}
 
 # CNAME to Container App
 resource "azurerm_dns_cname_record" "fabric_ui_cname" {
