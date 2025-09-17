@@ -109,7 +109,7 @@ resource "azurerm_dns_txt_record" "frontend_verification" {
 
 # Managed Certificate
 resource "azapi_resource" "frontend_cert" {
-  type      = "Microsoft.App/managedEnvironments/certificates@2023-05-01"
+  type      = "Microsoft.App/managedEnvironments/managedCertificates@2023-05-01"
   name      = "fabric-ui-cert"
   parent_id = azurerm_container_app_environment.app_env.id
   location  = azurerm_container_app_environment.app_env.location
@@ -117,8 +117,8 @@ resource "azapi_resource" "frontend_cert" {
 
   body = jsonencode({
     properties = {
-      domainControlValidation = "CNAME"
-      subjectName = "fabric-ui.cluedin-test.online"
+      domainName = "fabric-ui.cluedin-test.online"
+
     }
   })
 }
