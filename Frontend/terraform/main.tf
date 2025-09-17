@@ -2,6 +2,8 @@ locals {
   dns_zone_name       = "cluedin-test.online.com"    
   dns_resource_group  = "cluedin-networking"         
   record_set_name     = "fabric-ui"  
+  frontend_cert_arm_id = "/subscriptions/${var.azure_subscription_id}/resourceGroups/${azurerm_resource_group.group.name}/providers/Microsoft.App/managedEnvironments/${azurerm_container_app_environment.app_env.name}/managedCertificates/fabric-ui-cert"
+
 }
 
 # Resource group
@@ -81,6 +83,10 @@ data "azurerm_dns_zone" "main" {
   resource_group_name = "cluedin-networking"
   provider            = azurerm.cluedin_develop
 }
+data "azurerm_container_app" "frontend" {
+  name                = azurerm_container_app.frontend.name
+  resource_group_name = azurerm_container_app.frontend.resource_group_name
+}
 
 # CNAME to Container App
 resource "azurerm_dns_cname_record" "fabric_ui_cname" {
@@ -89,8 +95,8 @@ resource "azurerm_dns_cname_record" "fabric_ui_cname" {
   zone_name           = data.azurerm_dns_zone.main.name
   resource_group_name = data.azurerm_dns_zone.main.resource_group_name
   ttl                 = 300
-  record              = azurerm_container_app.frontend.latest_revision_fqdn
-
+  record              = data.azurerm_container_app.frontend.latest_revision_fqdn
+  depends_on = [azurerm_container_app.frontend]
 
 }
 
@@ -108,7 +114,7 @@ resource "azurerm_dns_txt_record" "frontend_verification" {
 }
 
 resource "azapi_resource" "frontend_domain_binding_nocert" {
-  type      = "Microsoft.App/containerApps/customDomains@2023-05-01"
+  type      = "Microsoft.App/containerApps/customDomains@2023-08-01"
   name      = "fabric-ui-nocert"
   parent_id = azurerm_container_app.frontend.id
   schema_validation_enabled = false
@@ -120,7 +126,7 @@ resource "azapi_resource" "frontend_domain_binding_nocert" {
 
   depends_on = [
     azurerm_dns_cname_record.fabric_ui_cname,
-    azurerm_dns_txt_record.frontend_verification,
+    azurerm_dns_txt_record.frontend_verification
   ]
 }
 
@@ -144,16 +150,17 @@ resource "azapi_resource" "frontend_cert" {
   ]
 }
 
+
 # Bind custom domain + cert
 resource "azapi_resource" "frontend_domain_binding" {
-  type      = "Microsoft.App/containerApps/customDomains@2023-05-01"
+  type      = "Microsoft.App/containerApps/customDomains@2023-08-01"
   name      = "fabric-ui"
   parent_id = azurerm_container_app.frontend.id
 
   body = jsonencode({
     properties = {
       hostname      = "fabric-ui.cluedin-test.online"
-      certificateId = azapi_resource.frontend_cert.id
+      certificateId = local.frontend_cert_arm_id
     }
   })
 
@@ -162,4 +169,6 @@ resource "azapi_resource" "frontend_domain_binding" {
   ]
 }
 
-
+output "frontend_cert_arm_id" {
+  value = azapi_resource.frontend_cert.id
+}
