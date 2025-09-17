@@ -109,7 +109,7 @@ resource "azurerm_dns_txt_record" "frontend_verification" {
 
 # Managed Certificate
 resource "azapi_resource" "frontend_cert" {
-  type      = "Microsoft.App/managedEnvironments/managedCertificates@2023-05-01"
+  type      = "Microsoft.App/managedEnvironments/managedCertificates@2022-03-01-preview"
   name      = "fabric-ui-cert"
   parent_id = azurerm_container_app_environment.app_env.id
   location  = azurerm_container_app_environment.app_env.location
