@@ -112,7 +112,13 @@ resource "azurerm_dns_txt_record" "frontend_verification" {
     value = azurerm_container_app.frontend.custom_domain_verification_id
   }
 }
-
+resource "time_sleep" "wait_dns" {
+  depends_on = [
+    azurerm_dns_cname_record.fabric_ui_cname,
+    azurerm_dns_txt_record.frontend_verification
+  ]
+  create_duration = "90s"
+}
 resource "azapi_resource" "frontend_domain_binding_nocert" {
   type      = "Microsoft.App/containerApps/customDomains@2023-08-01-preview"
   name      = "fabric-ui-nocert"
@@ -126,7 +132,9 @@ resource "azapi_resource" "frontend_domain_binding_nocert" {
 
   depends_on = [
     azurerm_dns_cname_record.fabric_ui_cname,
-    azurerm_dns_txt_record.frontend_verification
+    azurerm_dns_txt_record.frontend_verification,
+    azurerm_container_app.frontend,
+    time_sleep.wait_dns
   ]
 }
 
@@ -165,7 +173,7 @@ resource "azapi_resource" "frontend_domain_binding" {
   })
 
   depends_on = [
-    azapi_resource.frontend_cert,
+    azapi_resource.frontend_cert
   ]
 }
 
