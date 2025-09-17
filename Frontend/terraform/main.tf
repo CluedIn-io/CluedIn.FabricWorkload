@@ -111,7 +111,7 @@ resource "azapi_resource" "frontend_domain_binding_nocert" {
   type      = "Microsoft.App/containerApps/customDomains@2023-05-01"
   name      = "fabric-ui-nocert"
   parent_id = azurerm_container_app.frontend.id
-
+  schema_validation_enabled = false
   body = jsonencode({
     properties = {
       hostname = "fabric-ui.cluedin-test.online"
