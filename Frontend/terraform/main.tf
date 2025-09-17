@@ -117,7 +117,8 @@ resource "azapi_resource" "frontend_cert" {
 
   body = jsonencode({
     properties = {
-      subjectName = "fabric-ui.cluedin-test.online"
+      domainName              = "fabric-ui.cluedin-test.online"
+      domainControlValidation = "CNAME"
 
     }
   })
