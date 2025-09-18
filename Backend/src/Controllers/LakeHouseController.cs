@@ -192,7 +192,7 @@ namespace Boilerplate.Controllers
         [HttpPost("connections/test")]
         public async Task<IActionResult> TestConnectionAsync([FromBody] CluedInConnection connection)
         {
-            _ = await _authenticationService.AuthenticateDataPlaneCall(_httpContextAccessor.HttpContext, allowedScopes: []);
+            _ = await _authenticationService.AuthenticateDataPlaneCall(_httpContextAccessor.HttpContext, allowedScopes: ScopesForReadLakehouseFile);
             try
             {
                 var requestUri = new Uri($"https://{connection.OrganizationName}.{connection.Domain}/auth/connect/token");
@@ -233,7 +233,7 @@ namespace Boilerplate.Controllers
         [HttpPost("organizations")]
         public async Task<IActionResult> CreateOrganizationsAsync([FromBody] CreateOrganizationRequest createOrganizationRequest)
         {
-            _ = await _authenticationService.AuthenticateDataPlaneCall(_httpContextAccessor.HttpContext, allowedScopes: []);
+            _ = await _authenticationService.AuthenticateDataPlaneCall(_httpContextAccessor.HttpContext, allowedScopes: ScopesForReadLakehouseFile);
             var cluedInDomain = Environment.GetEnvironmentVariable("CluedInDomain");
             var newAccountAccessKey = Environment.GetEnvironmentVariable("CluedInNewAccountAccessKey");
             var request = new HttpRequestMessage(HttpMethod.Post, $"https://app.{cluedInDomain}/auth/api/account/new");
