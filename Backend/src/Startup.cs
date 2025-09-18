@@ -3,16 +3,19 @@
 // </copyright>
 
 using System.Net.Http;
+using System.Reflection.PortableExecutable;
 
 using Boilerplate.Exceptions;
 
 using Fabric_Extension_BE_Boilerplate;
 using Fabric_Extension_BE_Boilerplate.Utils;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
 using Newtonsoft.Json.Converters;
 
 namespace Boilerplate
@@ -65,6 +68,7 @@ namespace Boilerplate
             app.UseRouting();
 
             app.UseAuthorization();
+            app.UseHealthChecks("/healthz");
 
             app.UseEndpoints(endpoints =>
             {

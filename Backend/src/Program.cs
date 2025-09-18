@@ -2,12 +2,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 // </copyright>
 
+using System.Reflection.PortableExecutable;
+using System.Threading.Tasks;
+
 using Boilerplate.Constants;
 using Boilerplate.Services;
+
 using Fabric_Extension_BE_Boilerplate.Contracts.FabricAPI.Workload;
 using Fabric_Extension_BE_Boilerplate.Controllers;
 using Fabric_Extension_BE_Boilerplate.Services;
 using Fabric_Extension_BE_Boilerplate.Utils;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -18,8 +23,6 @@ using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 using Serilog;
-
-using System.Threading.Tasks;
 
 namespace Boilerplate
 {
@@ -86,6 +89,7 @@ namespace Boilerplate
                         //// add more dependencies as needed
 
                         services.AddHostedService<FabricBackendExtension>();
+                        services.AddHealthChecks();
                     }
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
@@ -93,7 +97,6 @@ namespace Boilerplate
                     webBuilder.UseStartup<Startup>();
                 })
                 .Build();
-
             await host.RunAsync();
         }
 
