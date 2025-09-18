@@ -145,8 +145,8 @@ resource "azurerm_dns_cname_record" "fabric_api_dns" {
   zone_name           = data.azurerm_dns_zone.main.name
   resource_group_name = data.azurerm_dns_zone.main.resource_group_name
   ttl                 = 300
-  #record              = azurerm_container_app.backend.ingress[0].fqdn
-  record              = azurerm_container_app.backend.latest_revision_fqdn
+  record              = azurerm_container_app.backend.ingress[0].fqdn  
+  #record              = azurerm_container_app.backend.latest_revision_fqdn
 }
 # TXT record for domain verification
 resource "azurerm_dns_txt_record" "backend_verification" {
