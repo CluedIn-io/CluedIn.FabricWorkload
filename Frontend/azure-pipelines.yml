@@ -1,0 +1,103 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- develop
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+- group: FabricService
+
+- name: ACR_NAME
+  value: cluedindev
+
+- name: containerAppName
+  value: fabricworkloadbackend-api
+
+- name: IMAGE_TAG
+  value: $(Build.BuildId)
+
+- name: ENVIRONMENT
+  value: develop
+
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      name: CluedIn-io/AzurePipelines.Templates
+      endpoint: 'CluedIn-io'
+      ref: refs/heads/refactor
+
+stages:
+  - stage: BUILD_FRONTEND
+    displayName: "Build Static Frontend"
+    jobs:
+      - job: BUILD_AND_UPLOAD
+        displayName: "Build & Deploy Static UI"
+        steps:         
+          - checkout: self
+            fetchDepth: 0 
+
+          - template: common/gitversion.yml@templates
+
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '18.x'
+            displayName: "Install Node.js"
+
+          - script: |
+              cd Frontend
+              npm install
+            displayName: "Install dependencies"
+
+          - script: |
+              cd Frontend
+              export NODE_OPTIONS="--max_old_space_size=4096"
+              npm run build:prod
+            displayName: "Build UI"
+          - task: Docker@2
+            displayName: "docker - Build"
+            inputs:
+              containerRegistry: 'CluedIn Docker Hub'   
+              repository: 'cluedin/cluedin.fabricworkloadfrontend-ui'              
+              command: 'build'
+              Dockerfile: Frontend/Dockerfile
+              buildContext: Frontend
+              tags: |
+                $(IMAGE_TAG)
+          - template: common/docker.push.yml@templates
+            parameters:
+              containerRegistry: 'CluedIn Docker Hub'
+              repository: 'cluedin/cluedin.fabricworkloadfrontend-ui'
+              tags: '$(IMAGE_TAG)'
+  - stage: DEPLOY_STAGE_DEVELOP
+    displayName: "Deploy Fabric Frontend - Dev"
+    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'develop'))
+    variables:
+      - name: environment
+        value: "develop"
+    jobs:
+      - template: ./templates/deploy-infrastructure.yml
+        parameters:
+          environment: develop
+          deploymentEnvironment: fabric-dev
+          terraformStorage: $(service.Terraform.StorageAccount)
+          terraformContainer: $(service.Terraform.Container)
+          terraformAccessKey: $(service.Terraform.AccessKey)
+          terraformDir: $(System.DefaultWorkingDirectory)/Frontend/terraform
+          terraformOutputPath: $(Pipeline.Workspace)/Frontend/terraform/$(environment)
+          terraformPlanPath: $(Pipeline.Workspace)/Frontend/terraform/$(environment)/tfplan
+          subscriptionId: $(service.Azure.SubscriptionId)
+          clientId: $(service.Azure.ClientId)
+          clientSecret: $(service.Azure.ClientSecret)
+          tenantId: $(service.Azure.TenantId)
+          location: $(service.Develop.Location)
+          resourceGroupName: $(service.Develop.ResourceGroupName)
+          subscriptionIdDevelop: $(service.Azure.SubscriptionIdDevelop)
+          dockerImage: $(service.shared.DockerImageFrontend)
+          imageTag: $(IMAGE_TAG)
+

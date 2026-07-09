@@ -1,0 +1,40 @@
+variable "azure_subscription_id" {
+  type = string
+}
+
+variable "azure_tenant_id" {
+  type = string
+}
+
+# General
+variable "environment" {
+  type = string
+}
+variable "azure_client_id" {
+  type      = string
+}
+
+variable "azure_client_secret" {
+  type      = string
+}
+
+variable "docker_image" {
+  type = string
+}
+
+variable "azure_subscription_id_develop" {
+  type = string
+}
+
+variable "image_tag" {
+  type = string
+}
+variable "tags" {
+  type = map(string)
+  default = {
+    Customer   = "CluedIn"
+    Purpose    = "Fabric Support"
+    Department = "Chronos"
+    CreatedBy  = "mis@cluedin.com"
+  }
+}

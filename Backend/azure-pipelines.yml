@@ -1,0 +1,90 @@
+trigger:
+- develop
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+- group: FabricService
+
+- name: ACR_NAME
+  value: cluedindev
+
+- name: containerAppName
+  value: fabricworkloadbackend-api
+
+- name: IMAGE_TAG
+  value: $(Build.BuildId)
+
+- name: ENVIRONMENT
+  value: develop
+
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      name: CluedIn-io/AzurePipelines.Templates
+      endpoint: 'CluedIn-io'
+      ref: refs/heads/refactor
+
+stages:
+  - stage: Build
+    displayName: "Build & Push Docker Image"
+    jobs:
+      - job: BuildAndPush
+        displayName: "Build .NET + Docker"
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - task: UseDotNet@2
+            inputs:
+              packageType: 'sdk'
+              version: '8.0.x'
+              installationPath: $(Agent.ToolsDirectory)/dotnet
+
+          - script: |
+              dotnet build Backend/Fabric_Extension_BE_Boilerplate.sln --configuration Release
+            displayName: "Build .NET Backend"
+
+          - task: Docker@2
+            displayName: "docker - Build"
+            inputs:
+              containerRegistry: 'CluedIn Docker Hub'   
+              repository: 'cluedin/cluedin.fabricworkloadbackend-api'              
+              command: 'build'
+              Dockerfile: Backend/src/Dockerfile
+              buildContext: Backend/src
+              tags: |
+                $(IMAGE_TAG)
+          - template: common/docker.push.yml@templates
+            parameters:
+              containerRegistry: 'CluedIn Docker Hub'
+              repository: 'cluedin/cluedin.fabricworkloadbackend-api'
+              tags: '$(IMAGE_TAG)'
+
+  - stage: DEPLOY_STAGE_DEVELOP
+    displayName: "Deploy Fabric Backend - develop"
+    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'develop'))
+    variables:
+      - name: environment
+        value: "develop"
+    jobs:
+      - template: ./templates/deploy-infrastructure.yml
+        parameters:
+          environment: develop
+          deploymentEnvironment: fabric-dev
+          terraformStorage: $(service.Terraform.StorageAccount)
+          terraformContainer: $(service.Terraform.BackendContainer)
+          terraformAccessKey: $(service.Terraform.AccessKey)
+          terraformDir: $(System.DefaultWorkingDirectory)/Backend/terraform
+          terraformOutputPath: $(Pipeline.Workspace)/Backend/terraform/$(environment)
+          terraformPlanPath: $(Pipeline.Workspace)/Backend/terraform/$(environment)/tfplan
+          subscriptionId: $(service.Azure.SubscriptionId)
+          clientId: $(service.Azure.ClientId)
+          clientSecret: $(service.Azure.ClientSecret)
+          tenantId: $(service.Azure.TenantId)
+          location: $(service.Develop.Location)
+          resourceGroupName: $(service.Develop.BackendResourceGroupName)
+          dockerImage: $(service.shared.DockerImage)
+          subscriptionIdDevelop: $(service.Azure.SubscriptionIdDevelop)
+          imageTag: $(IMAGE_TAG)
