@@ -4,20 +4,17 @@
 FROM node:18-alpine AS build
 WORKDIR /app
 
+# Increase Node memory for install & build
+ENV NODE_OPTIONS="--max_old_space_size=6144"
+
 # Copy package.json & lock file
 COPY package*.json ./
 
 # Install deps
-RUN npm install --legacy-peer-deps
+RUN npm install
 
 # Copy source
 COPY . .
-
-# Copy env file (needed for build)
-COPY .env.prod ./
-
-# Increase Node memory for Webpack
-ENV NODE_OPTIONS="--max_old_space_size=4096"
 
 # Build
 RUN npm run build:prod
