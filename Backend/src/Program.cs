@@ -89,7 +89,6 @@ namespace Boilerplate
                         //// add more dependencies as needed
 
                         services.AddHostedService<FabricBackendExtension>();
-                        services.AddHealthChecks();
                     }
                 })
                 .ConfigureWebHostDefaults(webBuilder =>

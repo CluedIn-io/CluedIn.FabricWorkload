@@ -42,6 +42,7 @@ namespace Boilerplate
                 {
                     options.SerializerSettings.Converters.Add(new StringEnumConverter());
                 });
+            services.AddHealthChecks();
             services
             .AddHttpClient()
             .AddHttpClient(IngestionConstants.AllowUntrustedSSLClient)
