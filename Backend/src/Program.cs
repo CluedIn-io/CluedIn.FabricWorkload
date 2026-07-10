@@ -2,11 +2,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 // </copyright>
 
+using System.Reflection.PortableExecutable;
+using System.Threading.Tasks;
+
 using Boilerplate.Constants;
 using Boilerplate.Services;
+
 using Fabric_Extension_BE_Boilerplate.Contracts.FabricAPI.Workload;
 using Fabric_Extension_BE_Boilerplate.Controllers;
+using Fabric_Extension_BE_Boilerplate.Services;
 using Fabric_Extension_BE_Boilerplate.Utils;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -17,8 +23,6 @@ using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 using Serilog;
-
-using System.Threading.Tasks;
 
 namespace Boilerplate
 {
@@ -59,6 +63,7 @@ namespace Boilerplate
                         AddOpenIdConnectConfigurationManager(services);
                         AddMsalConfidentialClientApplication(services, configuration);
                         services.AddSingleton<IAuthenticationService, AuthenticationService>();
+                        services.AddSingleton<ICluedInOrganizationService, CluedInOrganizationService>();
                         services.AddSingleton<IAuthorizationHandler, AuthorizationHandler>();
 
                         // Items and metadata store
@@ -91,7 +96,6 @@ namespace Boilerplate
                     webBuilder.UseStartup<Startup>();
                 })
                 .Build();
-
             await host.RunAsync();
         }
 

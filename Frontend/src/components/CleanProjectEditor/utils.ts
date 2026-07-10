@@ -81,7 +81,7 @@ export const useStyles = makeStyles({
     fileSelectorInfoPanel: {
       width: '50vw',
       maxWidth: '50vw',
-      padding: '5px 10px',
+      padding: '5px 8px',
       margin: '0 auto',
     },
     outputSummary: {

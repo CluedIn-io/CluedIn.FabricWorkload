@@ -167,6 +167,7 @@ const Wizard = ({
               {wizardStep === 1 &&
                 <CluedInConnectionInput
                   {...props}
+                  canCreateNewAccount={true}
                   cluedInConnection={cluedInConnection}
                   onCancel={() => {
                     onCancel();
@@ -624,6 +625,7 @@ export function CleanProjectEditor(props: PageProps) {
               }}>
               <DialogSurface>
                 <DialogTitle>
+                  Launch In CluedIn
                 </DialogTitle>
                 <DialogBody>
                   <DialogContent >

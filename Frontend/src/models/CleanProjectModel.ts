@@ -157,3 +157,16 @@ export interface CluedInConnection {
     userEmail: string;
     userPassword: string;
 }
+
+export interface CreateOrganizationRequest {
+    organizationName: string;
+    userEmail: string;
+    userPassword: string;
+}
+
+export interface CreateOrganizationResult {
+    organizationName: string;
+    domain: string;
+    userEmail: string;
+    userPassword: string;
+}

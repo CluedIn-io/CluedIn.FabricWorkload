@@ -35,7 +35,7 @@ import {
 } from "@ms-fabric/workload-client";
 
 import { Dispatch, SetStateAction } from "react";
-import { GenericItem } from '../models/CleanProjectModel';
+import { CreateOrganizationRequest, CreateOrganizationResult, GenericItem } from '../models/CleanProjectModel';
 import { cleanProjectJobTypeDisplayNames } from "../utils";
 
 import {
@@ -953,4 +953,29 @@ function parseExceptionErrorResponse(exception: any): WorkloadErrorDetails {
         return null;
     }
     return JSON.parse(errorResponse);
+}
+
+export async function createOrganization(
+    url: string,
+    request: CreateOrganizationRequest,
+    token: string): Promise<CreateOrganizationResult> {
+    try {
+        const response: Response = await fetch(url + '/organizations', 
+            { 
+                method: `POST`, 
+                headers: { 
+                    'Authorization': 'Bearer ' + token,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            });
+        const responseBody: string = await response.text();
+        const data = JSON.parse(responseBody);
+        return data;
+    }
+    catch (error) {
+        console.error(`Error creating organization: ${error}`);
+        return null;
+    }
 }
