@@ -51,13 +51,13 @@ stages:
 
           - script: |
               cd Frontend
-              export NODE_OPTIONS="--max_old_space_size=4096"
+              export NODE_OPTIONS="--max_old_space_size=6144"
               npm install
             displayName: "Install dependencies"
 
           - script: |
               cd Frontend
-              export NODE_OPTIONS="--max_old_space_size=4096"
+              export NODE_OPTIONS="--max_old_space_size=6144"
               npm run build:prod
             displayName: "Build UI"
           - task: Docker@2
