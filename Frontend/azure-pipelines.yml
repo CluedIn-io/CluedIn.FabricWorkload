@@ -24,6 +24,8 @@ variables:
 - name: ENVIRONMENT
   value: develop
 
+- name: BRANCH_NAME
+  value: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
 resources:
   repositories:
     - repository: templates
@@ -60,16 +62,23 @@ stages:
           #     export NODE_OPTIONS="--max_old_space_size=6144"
           #     npm run build:prod
           #   displayName: "Build UI"
-          - task: Docker@2
-            displayName: "docker - Build"
-            inputs:
-              containerRegistry: 'CluedIn Docker Hub'   
-              repository: 'cluedin/cluedin.fabricworkloadfrontend-ui'              
-              command: 'build'
-              Dockerfile: Frontend/Dockerfile
-              buildContext: Frontend
-              tags: |
-                $(IMAGE_TAG)
+          - script: |
+              cd Frontend
+              docker buildx build --push -t cluedin/cluedin.fabricworkloadfrontend-ui:$(IMAGE_TAG) \
+              --cache-to type=registry,ref=cluedindev.azurecr.io/cluedin/cluedin.fabricworkloadfrontend-ui:$(BRANCH_NAME) \
+              --cache-from type=registry,ref=cluedindev.azurecr.io/cluedin/cluedin.fabricworkloadfrontend-ui:$(BRANCH_NAME) \
+              --cache-from type=registry,ref=cluedindev.azurecr.io/cluedin/cluedin.fabricworkloadfrontend-ui:develop .
+            displayName: "Build"
+          # - task: Docker@2
+          #   displayName: "docker - Build"
+          #   inputs:
+          #     containerRegistry: 'CluedIn Docker Hub'   
+          #     repository: 'cluedin/cluedin.fabricworkloadfrontend-ui'              
+          #     command: 'build'
+          #     Dockerfile: Frontend/Dockerfile
+          #     buildContext: Frontend
+          #     tags: |
+          #       $(IMAGE_TAG)
           - template: common/docker.push.yml@templates
             parameters:
               containerRegistry: 'CluedIn Docker Hub'
