@@ -1,0 +1,104 @@
+parameters:
+  - name: environment
+    type: string
+  - name: dockerImage
+    type: string
+  - name: terraformDir
+    type: string
+  - name: subscriptionId
+    type: string
+  - name: clientId
+    type: string
+  - name: clientSecret
+    type: string
+  - name: tenantId
+    type: string
+  - name: location
+    type: string
+  - name: resourceGroupName
+    type: string
+  - name: terraformStorage
+    type: string
+  - name: terraformContainer
+    type: string
+  - name: terraformAccessKey
+    type: string
+  - name: terraformOutputPath
+    type: string
+  - name: terraformPlanPath
+    type: string
+  - name: deploymentEnvironment
+    type: string
+  - name: subscriptionIdDevelop
+    type: string
+  - name: imageTag
+    type: string
+
+jobs:
+  - deployment: deploy_infrastructure
+    displayName: Deploy Infrastructure ${{ parameters.environment }}
+    environment: ${{ parameters.deploymentEnvironment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: TerraformInstaller@1
+            displayName: "Terraform: Install"
+            inputs:
+              terraformVersion: latest
+          - pwsh: |
+              New-Item ${{ parameters.terraformOutputPath }} -ItemType Directory -Force
+
+              terraform init -reconfigure `
+                -backend-config="storage_account_name=${{ parameters.terraformStorage }}" `
+                -backend-config="container_name=${{ parameters.terraformContainer }}" `
+                -backend-config="access_key=${{ parameters.terraformAccessKey }}" `
+                -backend-config="key=fabric-${{ parameters.environment }}.state"
+            displayName: "terraform - Init"
+            workingDirectory: ${{ parameters.terraformDir }}
+
+          - script: echo ${{ parameters.environment }}
+            displayName: 'var environment'
+
+          - script: echo ${{ parameters.subscriptionId }}
+            displayName: 'var subscriptionId'
+
+          - script: echo ${{ parameters.clientId }}
+            displayName: 'var clientId'
+
+          - script: echo ${{ parameters.clientSecret }}
+            displayName: 'var clientSecret'
+
+          - script: echo ${{ parameters.tenantId }}
+            displayName: 'var tenantId'
+                    
+          - script: echo ${{ parameters.location }}
+            displayName: 'var location'
+     
+          - script: echo ${{ parameters.resourceGroupName }}
+            displayName: 'var resourceGroupName'
+          - pwsh: |
+             terraform validate
+            displayName: "terraform - Validate"
+            workingDirectory: ${{ parameters.terraformDir }}
+
+          - pwsh: |
+             terraform plan -out=${{ parameters.terraformPlanPath }}
+            displayName: "terraform - Plan"
+            workingDirectory: ${{ parameters.terraformDir }}
+            env:
+               TF_VAR_environment: ${{ parameters.environment }}
+               TF_VAR_azure_subscription_id: ${{ parameters.subscriptionId }}
+               TF_VAR_azure_client_id: ${{ parameters.clientId }}
+               TF_VAR_azure_client_secret: ${{ parameters.clientSecret }}
+               TF_VAR_azure_tenant_id: ${{ parameters.tenantId }}
+               TF_VAR_location: ${{ parameters.location }}
+               TF_VAR_resource_group_name: ${{ parameters.resourceGroupName }}
+               TF_VAR_docker_image: ${{ parameters.dockerImage }}
+               TF_VAR_azure_subscription_id_develop: ${{ parameters.subscriptionIdDevelop }}
+               TF_VAR_image_tag: ${{ parameters.imageTag }}
+          - pwsh: |
+             terraform apply -auto-approve ${{ parameters.terraformPlanPath }}
+            displayName: "terraform - Apply"
+            workingDirectory: ${{ parameters.terraformDir }}

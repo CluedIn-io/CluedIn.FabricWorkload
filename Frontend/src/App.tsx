@@ -55,6 +55,7 @@ export interface CluedInConnectionProps {
     workloadClient: WorkloadClientAPI;
     history?: History;
     cluedInConnection: CluedInConnection;
+    canCreateNewAccount?: boolean;
     onCluedInConnectionUpdated: (connection: CluedInConnection) => void;
     onCancel: () => void;
 }

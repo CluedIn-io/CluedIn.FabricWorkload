@@ -22,7 +22,7 @@ import {
 //import { Stack } from '@fluentui/react';
 
 import { PageProps } from 'src/App';
-import './../../styles.scss';
+//import './../../../styles.scss';
 //import { ItemTabToolbar } from "./ItemTabToolbar";
 
 const HomeTabToolbar = (props: RibbonProps) => {
@@ -75,7 +75,7 @@ export function Ribbon(props: RibbonProps) {
     <div className="ribbon">
       {/* <CollabButtons {...props} /> */}
       <TabList defaultSelectedValue="home" onTabSelect={onTabSelect} size="small">
-        <Tab value="home" data-testid="home-tab-btn">Home</Tab>
+        <Tab value="home" data-testid="home-tab-btn" tabIndex={0}>Home</Tab>
         {/* <Tab value="connection" data-testid="connection-tab-btn">CluedIn Connection</Tab>
         <Tab value="input-file" data-testid="input-file-tab-btn">Input File</Tab>
         <Tab value="output-file" data-testid="output-file-tab-btn">Output</Tab> */}
