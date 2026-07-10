@@ -17,7 +17,7 @@ RUN npm install
 COPY . .
 
 # Build
-RUN npm run build:prod
+RUN npm run build:prod2
 
 # =============================
 # Runtime Stage
